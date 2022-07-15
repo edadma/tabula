@@ -1,21 +1,29 @@
 package com.vinctus.scandas
 
 import io.github.edadma.csv.CSVRead
-import _root_.io.github.edadma.matrix.Matrix
+import io.github.edadma.matrix.Matrix
 import io.github.edadma.table.TextTable
 
 import scala.collection.immutable.ArraySeq
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.language.postfixOps
 
-class Dataset private (columns: ArraySeq[String], columnMap: Map[String, Int], val data: Matrix[Double])
-    extends (Int => Dataset) {
-  def this(columns: collection.Seq[String], data: Matrix[Double]) =
-    this(columns to ArraySeq, columns zip (1 to data.cols) toMap, data)
+class Dataset(
+    columns: collection.Seq[String],
+    data: collection.Seq[collection.Seq[Any]],
+) /*extends (Int => Dataset)*/ {
+  private val columnNameArray = new ArrayBuffer[String](columns.length)
+  private val columnNameMap = new mutable.HashMap[String, Int]
+  private val columnTypeArray = ArrayBuffer.from[Datatype](columns)
+  private val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
 
   require(columns.nonEmpty, "require at least one column")
-  require(data.cols == columns.length, "require number of data columns equal number of column names")
+//  require(data.cols == width, "require number of data columns equal number of column names")
 
-  def apply(ridx: Int): Dataset = new Dataset(columns, columnMap, data.row(ridx))
+  val width: Int = columns.length
+
+//  def apply(ridx: Int): Dataset = new Dataset(columns, columnMap, data.row(ridx))
 
   def col(name: String): Matrix[Double] = data.col(columnMap(name))
 
