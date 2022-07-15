@@ -1,10 +1,11 @@
 package com.vinctus.scandas
 
-import _root_.io.github.edadma.csv.CSVRead
+import io.github.edadma.csv.CSVRead
 import _root_.io.github.edadma.matrix.Matrix
-import _root_.io.github.edadma.table.TextTable
+import io.github.edadma.table.TextTable
 
 import scala.collection.immutable.ArraySeq
+import scala.language.postfixOps
 
 class Dataset private (columns: ArraySeq[String], columnMap: Map[String, Int], val data: Matrix[Double])
     extends (Int => Dataset) {
@@ -30,7 +31,7 @@ class Dataset private (columns: ArraySeq[String], columnMap: Map[String, Int], v
 
   def rowIterator: Iterator[Matrix[Double]] = (1 to rows).iterator map data.row
 
-  def datum(ridx: Int): (Vector, Double) = (data row ridx removeCol data.cols prepend ONE, data.row(ridx).last)
+//  def datum(ridx: Int): (MVector, Double) = (data row ridx removeColView data.cols prepend ONE, data.row(ridx).last)
 
   def transform(elem: (Int, Int) => Double) = new Dataset(columns, columnMap, data.build(elem))
 

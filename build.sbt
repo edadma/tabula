@@ -21,13 +21,14 @@ lazy val scandas = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     githubOwner := "edadma",
     githubRepository := name.value,
     mainClass := Some(s"${organization.value}.${name.value}.Main"),
-//    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.12" % "test",
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.12" % "test",
 //    libraryDependencies ++= Seq(
 //      "io.github.edadma" %%% "cross-platform" % "0.1.1"
 //    ),
     libraryDependencies ++= Seq(
       "com.github.scopt" %%% "scopt" % "4.1.0",
       "io.github.edadma" %%% "csv" % "0.1.2",
+      "io.github.edadma" %%% "matrix" % "0.1.2",
     ),
     publishMavenStyle := true,
     Test / publishArtifact := false,
