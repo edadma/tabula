@@ -10,8 +10,9 @@ import scala.collection.mutable.ArrayBuffer
 import scala.language.postfixOps
 
 class Dataset(
-    columns: collection.Seq[String],
+    columns: Seq[String],
     data: collection.Seq[collection.Seq[Any]],
+    types: Seq[Datatype] = Seq(Infer),
 ) /*extends (Int => Dataset)*/ {
   private val columnNameArray = new ArrayBuffer[String](columns.length)
   private val columnNameMap = new mutable.HashMap[String, Int]
