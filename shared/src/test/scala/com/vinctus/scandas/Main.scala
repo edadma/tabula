@@ -1,4 +1,4 @@
-package com.vinctus.projectName
+package com.vinctus.scandas
 
 object Main extends App {
 

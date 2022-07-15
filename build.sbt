@@ -1,10 +1,10 @@
 ThisBuild / licenses += "ISC" -> url("https://opensource.org/licenses/ISC")
 ThisBuild / versionScheme := Some("semver-spec")
 
-lazy val projectName = crossProject(JSPlatform, JVMPlatform, NativePlatform)
+lazy val scandas = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(
-    name := "projectName",
+    name := "scandas",
     version := "0.1.0",
     scalaVersion := "3.1.3",
     scalacOptions ++=
@@ -27,7 +27,7 @@ lazy val projectName = crossProject(JSPlatform, JVMPlatform, NativePlatform)
 //    ),
     libraryDependencies ++= Seq(
       "com.github.scopt" %%% "scopt" % "4.1.0",
-//      "com.lihaoyi" %%% "pprint" % "0.7.0" % "test",
+      "io.github.edadma" %%% "csv" % "0.1.2",
     ),
     publishMavenStyle := true,
     Test / publishArtifact := false,
@@ -35,6 +35,7 @@ lazy val projectName = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   )
   .jvmSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
+    libraryDependencies += "com.lihaoyi" %%% "pprint" % "0.7.0" % "test",
   )
   .nativeSettings(
     nativeLinkStubs := true,
