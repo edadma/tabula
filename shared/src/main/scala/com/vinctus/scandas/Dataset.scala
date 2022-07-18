@@ -13,24 +13,33 @@ class Dataset(
     columns: Seq[String],
     data: collection.Seq[collection.Seq[Any]],
     types: Seq[Datatype] = Seq(Infer),
-) /*extends (Int => Dataset)*/:
+):
   private val columnNameArray = ArrayBuffer from columns
   private val columnNameMap = new mutable.HashMap[String, Int]
   private val columnTypeArray = ArrayBuffer from types
   private val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
+  private val nonNullCounts = ArrayBuffer.fill(cols)(0)
 
-  require(columnNameArray.nonEmpty, "require at least one column")
-  require(dataArray.head.length == cols, "require number of data columns equal number of column names")
+  require(columnNameArray.nonEmpty, "a dataset needs at least one column")
+  require(dataArray.head.length == cols, "the number of data columns should be equal to the number of column names")
+  require(
+    columnTypeArray.length == 1 || columnTypeArray.length == cols,
+    "there should be one type or the same number of types as there are columns",
+  )
+
+  if columnTypeArray.length == 1 && cols > 1 then
+    for (i <- 2 to cols)
+      columnTypeArray += columnTypeArray.head
+
+  for (r <- dataArray)
 
   def col(name: String): Seq[Any] = col(columnNameMap(name))
 
   def col(cidx: Int): Seq[Any] = data map (_(cidx)) to ArraySeq
 
-  def mean(cidx: Int): Double = {
-    val c = col(cidx).asInstanceOf[Seq[Double]]
-
-    c.sum / c.length
-  }
+  def mean(cidx: Int): Double =
+    col(cidx) match
+      case c: Seq[Double] => c.sum / c.length
 
   def rows: Int = dataArray.length
 
@@ -59,8 +68,8 @@ class Dataset(
       new TextTable() {
         header("#", "Column", "Non-Null Count", "Datatype")
 
-        for (((n, t), i) <- columnNameArray zip columnTypeArray zipWithIndex)
-          row(i, n, "-", t)
+        for ((((n, t), c), i) <- columnNameArray zip columnTypeArray zip nonNullCounts zipWithIndex)
+          row(i, n, c, t)
 
         rightAlignment(1)
         rightAlignment(3)
@@ -68,8 +77,6 @@ class Dataset(
     )
 
   override def toString: String = head
-
-end Dataset
 
 object Dataset:
 
@@ -92,7 +99,5 @@ object Dataset:
       else (columns, csv)
 
     Dataset(header, data map (_ map (_.toDouble)))
-
-end Dataset
 
 // todo: columns: Seq[String] | Int // so that you can specify starting column number
