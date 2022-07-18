@@ -12,7 +12,7 @@ import scala.language.postfixOps
 class Dataset(
     columns: Seq[String],
     data: collection.Seq[collection.Seq[Any]],
-    types: Seq[Datatype] = Seq(Infer),
+    types: Seq[Type] = Seq(InferType),
 ):
   private val columnNameArray = ArrayBuffer from columns
   private val columnNameMap = new mutable.HashMap[String, Int]
@@ -31,7 +31,61 @@ class Dataset(
     for (i <- 2 to cols)
       columnTypeArray += columnTypeArray.head
 
-  for (r <- dataArray)
+  private val LongMinDouble = Long.MinValue.toDouble
+  private val LongMaxDouble = Long.MaxValue.toDouble
+
+  private def convertError(a: Any, to: String, r: Int, c: Int) =
+    sys.error(s"conversion error [$r, $c]: '$a' cannot be converted to type '$to'")
+
+  for (c <- columnNameArray.indices) {
+    var tempType = columnTypeArray(c)
+    val tempValues = new ArrayBuffer[Any](rows)
+
+    for (r <- dataArray.indices) {
+      val d = dataArray(r)(c)
+      val prevTempType = tempType
+
+      columnTypeArray(c) match
+        case InferType | MixedType =>
+          tempValues(r) = IntType.convert(d) match
+            case None =>
+              FloatType.convert(d) match
+                case None =>
+                  BoolType.convert(d) match
+                    case None =>
+                      tempType = StringType
+                      d.toString
+                    case Some(v) =>
+                      tempType = BoolType
+                      v
+                case Some(v) =>
+                  tempType = FloatType
+                  v
+            case Some(v) =>
+              tempType = IntType
+              v
+        case t => tempValues(r) = t.convert(d) getOrElse convertError(d, t, r, c)
+
+      columnTypeArray(c) match
+        case InferType =>
+          if prevTempType != InferType then
+            tempType = (prevTempType, tempType) match
+              case (IntType, t @ (IntType | FloatType)) => t
+              case (FloatType, FloatType | IntType)     => FloatType
+              case (BoolType, BoolType)                 => BoolType
+              case _                                    => StringType
+        case MixedType => // todo
+    }
+
+    if columnTypeArray(c) == InferType then
+      columnTypeArray(c) = tempType
+
+      for (r <- dataArray.indices)
+        tempValues(r) = tempType.convert(tempValues(r))
+
+    for (r <- dataArray.indices)
+      dataArray(r)(c) = tempValues(r)
+  }
 
   def col(name: String): Seq[Any] = col(columnNameMap(name))
 
