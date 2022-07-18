@@ -2,7 +2,7 @@ package com.vinctus.scandas
 
 import io.github.edadma.csv.CSVRead
 import io.github.edadma.matrix.Matrix
-import io.github.edadma.table.TextTable
+import io.github.edadma.table.{ASCII, TextTable}
 
 import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
@@ -19,8 +19,8 @@ class Dataset(
   private val columnTypeArray = ArrayBuffer from types
   private val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
 
-  require(columns.nonEmpty, "require at least one column")
-//  require(data.cols == width, "require number of data columns equal number of column names")
+  require(columnNameArray.nonEmpty, "require at least one column")
+  require(dataArray.head.length == cols, "require number of data columns equal number of column names")
 
   def col(name: String): Seq[Any] = col(columnNameMap(name))
 
@@ -32,9 +32,9 @@ class Dataset(
     c.sum / c.length
   }
 
-  def rows: Int = data.length
+  def rows: Int = dataArray.length
 
-  def cols: Int = columns.length
+  def cols: Int = columnNameArray.length
 
   def getRows(fidx: Int, tidx: Int): String =
     new TextTable() {
@@ -47,6 +47,25 @@ class Dataset(
     }.toString
 
   def head: String = getRows(0, 9 min (rows - 1))
+
+  def tail: String = getRows(rows - 10 max 0, rows - 1)
+
+  def info(): Unit =
+    println(columnNameArray)
+    println(columnTypeArray)
+    println(getClass.getName)
+    println(s"$rows rows; $cols columns")
+    println(
+      new TextTable() {
+        header("#", "Column", "Non-Null Count", "Datatype")
+
+        for (((n, t), i) <- columnNameArray zip columnTypeArray zipWithIndex)
+          row(i, n, "-", t)
+
+        rightAlignment(1)
+        rightAlignment(3)
+      },
+    )
 
   override def toString: String = head
 
