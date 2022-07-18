@@ -19,6 +19,9 @@ case object InferType extends Type("infer"):
 case object MixedType extends Type("mixed"):
   def convert(a: Any): Option[Any] = sys.error("MixedType.convert()")
 
+case object UnknownType extends Type("unknown"):
+  def convert(a: Any): Option[Any] = sys.error("UnknownType.convert()")
+
 case object IntType extends Type("int"):
   private val LongMinDouble = Long.MinValue.toDouble
   private val LongMaxDouble = Long.MaxValue.toDouble

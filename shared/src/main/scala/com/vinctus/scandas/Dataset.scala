@@ -21,7 +21,10 @@ class Dataset(
   private val nonNullCounts = ArrayBuffer.fill(cols)(0)
 
   require(columnNameArray.nonEmpty, "a dataset needs at least one column")
-  require(dataArray.head.length == cols, "the number of data columns should be equal to the number of column names")
+  require(
+    isEmpty || dataArray.head.length == cols,
+    "the number of data columns should be equal to the number of column names",
+  )
   require(
     columnTypeArray.length == 1 || columnTypeArray.length == cols,
     "there should be one type or the same number of types as there are columns",
@@ -36,6 +39,7 @@ class Dataset(
 
   for (c <- columnNameArray.indices) {
     var tempType = columnTypeArray(c)
+    var changed = false
     val tempValues = new ArrayBuffer[Any](rows)
 
     for (r <- dataArray.indices) {
@@ -66,14 +70,22 @@ class Dataset(
               case (FloatType, FloatType | IntType)     => FloatType
               case (BoolType, BoolType)                 => BoolType
               case _                                    => StringType
+            if prevTempType != tempType then changed = true
         case MixedType => // todo
     }
 
     if columnTypeArray(c) == InferType then
-      columnTypeArray(c) = tempType
+      if isEmpty then columnTypeArray(c) = UnknownType
+      else
+        columnTypeArray(c) = tempType
 
-      for (r <- dataArray.indices)
-        tempValues(r) = tempType.convert(tempValues(r)) getOrElse convertError(tempValues(r), tempType.name, r, c)
+        if changed then
+          for (r <- dataArray.indices)
+            tempValues(r) =
+              tempType.convert(dataArray(r)(c)) getOrElse convertError(dataArray(r)(c), tempType.name, r, c)
+        else
+          for (r <- dataArray.indices)
+            tempValues(r) = tempType.convert(tempValues(r)) getOrElse convertError(tempValues(r), tempType.name, r, c)
 
     for (r <- dataArray.indices)
       dataArray(r)(c) = tempValues(r)
@@ -88,6 +100,8 @@ class Dataset(
       case c: Seq[Double] => c.sum / c.length
 
   def rows: Int = dataArray.length
+
+  def isEmpty: Boolean = rows == 0
 
   def cols: Int = columnNameArray.length
 
@@ -113,7 +127,7 @@ class Dataset(
         header("#", "Column", "Non-Null Count", "Datatype")
 
         for ((((n, t), c), i) <- columnNameArray zip columnTypeArray zip nonNullCounts zipWithIndex)
-          row(i, n, c, t)
+          row(i, n, c, t.name)
 
         rightAlignment(1)
         rightAlignment(3)
