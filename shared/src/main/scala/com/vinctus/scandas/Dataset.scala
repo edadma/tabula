@@ -31,9 +31,6 @@ class Dataset(
     for (i <- 2 to cols)
       columnTypeArray += columnTypeArray.head
 
-  private val LongMinDouble = Long.MinValue.toDouble
-  private val LongMaxDouble = Long.MaxValue.toDouble
-
   private def convertError(a: Any, to: String, r: Int, c: Int) =
     sys.error(s"conversion error [$r, $c]: '$a' cannot be converted to type '$to'")
 
@@ -47,24 +44,19 @@ class Dataset(
 
       columnTypeArray(c) match
         case InferType | MixedType =>
-          tempValues(r) = IntType.convert(d) match
+          val (t, v) = IntType.convert(d) match
             case None =>
               FloatType.convert(d) match
                 case None =>
                   BoolType.convert(d) match
-                    case None =>
-                      tempType = StringType
-                      d.toString
-                    case Some(v) =>
-                      tempType = BoolType
-                      v
-                case Some(v) =>
-                  tempType = FloatType
-                  v
-            case Some(v) =>
-              tempType = IntType
-              v
-        case t => tempValues(r) = t.convert(d) getOrElse convertError(d, t, r, c)
+                    case None    => (StringType, d.toString)
+                    case Some(c) => (BoolType, c)
+                case Some(c) => (FloatType, c)
+            case Some(c) => (IntType, c)
+
+          tempType = t
+          tempValues += v
+        case t => tempValues(r) = t.convert(d) getOrElse convertError(d, t.name, r, c)
 
       columnTypeArray(c) match
         case InferType =>
@@ -81,7 +73,7 @@ class Dataset(
       columnTypeArray(c) = tempType
 
       for (r <- dataArray.indices)
-        tempValues(r) = tempType.convert(tempValues(r))
+        tempValues(r) = tempType.convert(tempValues(r)) getOrElse convertError(tempValues(r), tempType.name, r, c)
 
     for (r <- dataArray.indices)
       dataArray(r)(c) = tempValues(r)
@@ -114,9 +106,7 @@ class Dataset(
   def tail: String = getRows(rows - 10 max 0, rows - 1)
 
   def info(): Unit =
-    println(columnNameArray)
-    println(columnTypeArray)
-    println(getClass.getName)
+    println(s"<class ${getClass.getName}>")
     println(s"$rows rows; $cols columns")
     println(
       new TextTable() {

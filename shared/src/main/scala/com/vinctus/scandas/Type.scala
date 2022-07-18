@@ -10,16 +10,19 @@ object Type:
       case "String" | "string" => StringType
       case "Bool" | "bool"     => BoolType
 
-abstract class Type:
+abstract class Type(val name: String):
   def convert(a: Any): Option[Any]
 
-case object InferType extends Type:
+case object InferType extends Type("infer"):
   def convert(a: Any): Option[Any] = sys.error("InferType.convert()")
 
-case object MixedType extends Datatype:
+case object MixedType extends Type("mixed"):
   def convert(a: Any): Option[Any] = sys.error("MixedType.convert()")
 
-case object IntType extends Type:
+case object IntType extends Type("int"):
+  private val LongMinDouble = Long.MinValue.toDouble
+  private val LongMaxDouble = Long.MaxValue.toDouble
+
   def convert(a: Any): Option[Any] =
     a match
       case n: Int    => Some(n.toLong)
@@ -28,7 +31,7 @@ case object IntType extends Type:
       case s: String => s.toLongOption
       case _         => None
 
-case object FloatType extends Type:
+case object FloatType extends Type("float"):
   def convert(a: Any): Option[Any] =
     a match
       case n: Int    => Some(n.toDouble)
@@ -37,14 +40,14 @@ case object FloatType extends Type:
       case s: String => s.toDoubleOption
       case _         => None
 
-case object BoolType extends Type:
+case object BoolType extends Type("bool"):
   def convert(a: Any): Option[Any] =
     a match
       case "t" | "T" | "true" | "True"   => Some(true)
       case "f" | "F" | "false" | "False" => Some(false)
       case _                             => None
 
-case object StringType extends Type:
+case object StringType extends Type("string"):
   def convert(a: Any): Option[Any] = Some(a.toString)
 
 // todo TimestampType
