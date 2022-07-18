@@ -13,64 +13,67 @@ class Dataset(
     columns: Seq[String],
     data: collection.Seq[collection.Seq[Any]],
     types: Seq[Datatype] = Seq(Infer),
-) /*extends (Int => Dataset)*/ {
-  private val columnNameArray = new ArrayBuffer[String](columns.length)
+) /*extends (Int => Dataset)*/:
+  private val columnNameArray = ArrayBuffer from columns
   private val columnNameMap = new mutable.HashMap[String, Int]
-  private val columnTypeArray = ArrayBuffer.from[Datatype](columns)
+  private val columnTypeArray = ArrayBuffer from types
   private val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
 
   require(columns.nonEmpty, "require at least one column")
 //  require(data.cols == width, "require number of data columns equal number of column names")
 
-  val width: Int = columns.length
+  def col(name: String): Seq[Any] = col(columnNameMap(name))
 
-//  def apply(ridx: Int): Dataset = new Dataset(columns, columnMap, data.row(ridx))
-
-  def col(name: String): Matrix[Double] = data.col(columnMap(name))
+  def col(cidx: Int): Seq[Any] = data map (_(cidx)) to ArraySeq
 
   def mean(cidx: Int): Double = {
-    val c = data.col(cidx)
+    val c = col(cidx).asInstanceOf[Seq[Double]]
 
     c.sum / c.length
   }
 
-  def rows: Int = data.rows
+  def rows: Int = data.length
 
-  def cols: Int = data.cols
+  def cols: Int = columns.length
 
-  def rowIterator: Iterator[Matrix[Double]] = (1 to rows).iterator map data.row
-
-//  def datum(ridx: Int): (MVector, Double) = (data row ridx removeColView data.cols prepend ONE, data.row(ridx).last)
-
-  def transform(elem: (Int, Int) => Double) = new Dataset(columns, columnMap, data.build(elem))
-
-  override def toString: String =
+  def getRows(fidx: Int, tidx: Int): String =
     new TextTable() {
-      headerSeq(columns)
+      headerSeq("" +: columnNameArray)
 
-      for (i <- 1 to data.rows)
-        rowSeq(data.row(i))
+      for (i <- fidx to tidx)
+        rowSeq(i +: dataArray(i))
 
-      1 to data.cols foreach rightAlignment
+      1 to cols foreach rightAlignment
     }.toString
 
-}
+  def head: String = getRows(0, 9 min (rows - 1))
 
-object Dataset {
+  override def toString: String = head
 
-  def apply(columns: collection.Seq[String], data: Matrix[Double]): Dataset =
-    new Dataset(columns, data)
+end Dataset
 
-  def apply(columns: collection.Seq[String], data: Seq[Seq[Any]]): Dataset =
-    new Dataset(columns, Matrix.fromArray(data map (_ map (_.asInstanceOf[Number].doubleValue) toArray) toArray))
+object Dataset:
 
-  def fromCSV(file: String, columns: collection.Seq[String] = null): Dataset = {
+//  def apply(columns: collection.Seq[String], data: Matrix[Double]): Dataset =
+//    new Dataset(columns, data)
+//
+//  def apply(columns: collection.Seq[String], data: Seq[Seq[Any]]): Dataset =
+//    new Dataset(columns, Matrix.fromArray(data map (_ map (_.asInstanceOf[Number].doubleValue) toArray) toArray))
+
+  def fromString(s: String): Dataset =
+    val csv = CSVRead.fromFile(s).get
+    val (header, data) = (csv.head, csv drop 1)
+
+    Dataset(header, data)
+
+  def fromCSV(file: String, columns: Seq[String] = null): Dataset =
     val csv = CSVRead.fromFile(file).get
     val (header, data) =
       if (columns eq null) (csv.head, csv drop 1)
       else (columns, csv)
 
     Dataset(header, data map (_ map (_.toDouble)))
-  }
 
-}
+end Dataset
+
+// todo: columns: Seq[String] | Int // so that you can specify starting column number

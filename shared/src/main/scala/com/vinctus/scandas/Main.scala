@@ -1,7 +1,3 @@
 package com.vinctus.scandas
 
-object Main extends App {
-
-  println(123)
-
-}
+object Main extends App

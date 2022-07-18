@@ -1,6 +1,8 @@
 ThisBuild / licenses += "ISC" -> url("https://opensource.org/licenses/ISC")
 ThisBuild / versionScheme := Some("semver-spec")
 
+publish / skip := true
+
 lazy val scandas = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(
@@ -29,6 +31,7 @@ lazy val scandas = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       "com.github.scopt" %%% "scopt" % "4.1.0",
       "io.github.edadma" %%% "csv" % "0.1.2",
       "io.github.edadma" %%% "matrix" % "0.1.2",
+      "io.github.edadma" %%% "table" % "1.0.3",
     ),
     publishMavenStyle := true,
     Test / publishArtifact := false,
