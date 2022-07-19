@@ -239,7 +239,7 @@ object Dataset:
     )
 
   def fromString(s: String): Dataset =
-    val csv = CSVRead.fromFile(s).get
+    val csv = CSVRead.fromString(s).get
     val (header, data) = (csv.head, csv drop 1)
 
     Dataset(header, data)
