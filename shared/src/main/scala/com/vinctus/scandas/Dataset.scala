@@ -94,9 +94,18 @@ class Dataset(
       dataArray(r)(c) = tempValues(r)
   }
 
-  def mean(cidx: Int): Double =
-    apply(cidx) match
-      case c: Seq[Double] => c.sum / c.length
+  def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
+
+  def max(cidx: Int): Double = columnNonNullNumericalIterator(cidx).max
+
+  def mean(cidx: Int): Double = columnNonNullNumericalIterator(cidx).sum / count(cidx)
+
+  def count(cidx: Int): Int = columnNonNullIterator[Any](cidx).count(_ => true)
+
+  def std(cidx: Int): Double =
+    val m = mean(cidx)
+
+    (columnNonNullNumericalIterator(cidx) map (a => (a - m) * (a - m)) sum) / (rows - 1)
 
   def rows: Int = dataArray.length
 
@@ -128,12 +137,14 @@ class Dataset(
         header("#", "Column", "Non-Null Count", "Datatype")
 
         for (((n, t), i) <- columnNameArray zip columnTypeArray zipWithIndex)
-          this.row(i, n, columnNonNullIterator[Any](i).count(_ => true), t.name)
+          this.row(i, n, count(i), t.name)
 
         rightAlignment(1)
         rightAlignment(3)
       },
     )
+
+//  def describe: Dataset =
 
   def shape: (Int, Int) = (rows, cols)
 
@@ -145,6 +156,9 @@ class Dataset(
 
   def columnNonNullIterator[T](cidx: Int): Iterator[T] =
     (dataArray.iterator map (_(cidx)) filter (_ != null)).asInstanceOf[Iterator[T]]
+
+  def columnNonNullNumericalIterator(cidx: Int): Iterator[Double] =
+    columnNonNullIterator[Number](cidx) map (_.doubleValue)
 
   def iterator: Iterator[IndexedSeq[Any]] = dataArray.iterator map (_.toIndexedSeq)
 

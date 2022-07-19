@@ -4,7 +4,7 @@ object Main extends App:
 
   val ds = new Dataset(
     Seq("column 1", "column 2"),
-    for (r <- 1 to 2) yield for (c <- 1 to 2) yield if r == 1 && c == 1 then null else s"$r$c",
+    for (r <- 1 to 2) yield for (c <- 1 to 2) yield if r == c then s"$r.$c" else s"$r$c",
   )
 
   ds.info()
