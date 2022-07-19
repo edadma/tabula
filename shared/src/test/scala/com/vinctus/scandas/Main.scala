@@ -16,6 +16,7 @@ object Main extends App:
 
   ds.info()
   ds.describe.print()
+  ds.sample(3).print()
 
 //  ds.print()
 //  println(ds.dataArray.flatten map (a => if a == null then "<null>" else a.getClass))

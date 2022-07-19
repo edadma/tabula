@@ -99,12 +99,22 @@ class Dataset private (
     ds.index(Seq("count", "mean", "std", "min", "q1", "q2", "q3", "max"))
     ds
 
-//  def sample(n: Int): Dataset =
-//    require(n >= 0, "number of samples must be non-negative")
-//
-//    val indices = new mutable.HashSet[Int]
-//
-//    while indices.size < n do indices += Random.nextInt(rows)
+  def sample(n: Int): Dataset =
+    require(n >= 0, "number of samples must be non-negative")
+
+    val indicesSet = new mutable.HashSet[Int]
+
+    while indicesSet.size < n do indicesSet += Random.nextInt(rows)
+
+    val indices = indicesSet to ArrayBuffer
+
+    new Dataset(
+      columnNameArray.clone,
+      columnNameMap.clone,
+      indices map dataArray,
+      columnTypeArray.clone,
+      indices map rowIndexArray,
+    )
 
   def shape: (Int, Int) = (rows, cols)
 
