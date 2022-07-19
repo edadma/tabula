@@ -9,7 +9,7 @@ object Main extends App:
 
 //  val ds = Dataset.fromCSV("iris.csv")
 
-  val ds = new Dataset(
+  val ds = Dataset(
     Seq("Value"),
     Seq(2, 4, 6, 8, 13, 16, 22, 35, 40, 42, 48).map(Seq(_)),
   )

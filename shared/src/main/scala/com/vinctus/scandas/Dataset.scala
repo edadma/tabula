@@ -10,91 +10,13 @@ import scala.collection.mutable.ArrayBuffer
 import scala.language.postfixOps
 import scala.util.Random
 
-class Dataset(
-    columns: Seq[String],
-    data: collection.Seq[collection.Seq[Any]],
-    types: Seq[Type] = Seq(InferType),
+class Dataset private (
+    private val columnNameArray: ArrayBuffer[String],
+    private val columnNameMap: mutable.HashMap[String, Int],
+    private val dataArray: ArrayBuffer[ArrayBuffer[Any]],
+    private val columnTypeArray: ArrayBuffer[Type],
+    private val rowIndexArray: ArrayBuffer[Any],
 ):
-  private val columnNameArray = ArrayBuffer from columns
-  private val columnNameMap = columnNameArray.zipWithIndex to mutable.HashMap
-  private val columnTypeArray = ArrayBuffer from types
-  private[scandas] val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
-  private val rowIndexArray: ArrayBuffer[Any] = dataArray.indices to ArrayBuffer
-
-  require(columnNameArray.nonEmpty, "a dataset needs at least one column")
-  require(
-    isEmpty || dataArray.head.length == cols,
-    "the number of data columns should be equal to the number of column names",
-  )
-  require(
-    columnTypeArray.length == 1 || columnTypeArray.length == cols,
-    "there should be one type or the same number of types as there are columns",
-  )
-
-  if columnTypeArray.length == 1 && cols > 1 then
-    for (_ <- 2 to cols)
-      columnTypeArray += columnTypeArray.head
-
-  private def convertError(a: Any, to: String, r: Int, c: Int) =
-    sys.error(s"conversion error [${r + 1}, ${c + 1}]: '$a' cannot be converted to type '$to'")
-
-  for (c <- columnNameArray.indices) {
-    var tempType = columnTypeArray(c)
-    var changed = false
-    val tempValues = new ArrayBuffer[Any](rows)
-
-    for (r <- dataArray.indices) {
-      val d = dataArray(r)(c)
-      val prevTempType = tempType
-
-      columnTypeArray(c) match
-        case InferType if d == null => tempValues += null
-        case InferType =>
-          val (t, v) = IntType.convert(d) match
-            case None =>
-              FloatType.convert(d) match
-                case None =>
-                  BoolType.convert(d) match
-                    case None    => (StringType, String.valueOf(d))
-                    case Some(c) => (BoolType, c)
-                case Some(c) => (FloatType, c)
-            case Some(c) => (IntType, c)
-
-          tempType = t
-          tempValues += v
-        case t => tempValues += t.convert(d, true) getOrElse convertError(d, t.name, r, c)
-
-      columnTypeArray(c) match
-        case InferType =>
-          if prevTempType != InferType then
-            tempType = (prevTempType, tempType) match
-              case (IntType, t @ (IntType | FloatType)) => t
-              case (FloatType, FloatType | IntType)     => FloatType
-              case (BoolType, BoolType)                 => BoolType
-              case _                                    => StringType
-            if prevTempType != tempType then changed = true
-//        case MixedType => // todo
-        case _ =>
-    }
-
-    if columnTypeArray(c) == InferType then
-      if isEmpty then columnTypeArray(c) = UnknownType
-      else
-        columnTypeArray(c) = tempType
-
-        if changed || tempType == StringType then
-          for (r <- dataArray.indices)
-            tempValues(r) =
-              tempType.convert(dataArray(r)(c), true) getOrElse convertError(dataArray(r)(c), tempType.name, r, c)
-        else
-          for (r <- dataArray.indices)
-            tempValues(r) =
-              tempType.convert(tempValues(r), true) getOrElse convertError(tempValues(r), tempType.name, r, c)
-
-    for (r <- dataArray.indices)
-      dataArray(r)(c) = tempValues(r)
-  }
-
   def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
 
   def max(cidx: Int): Double = columnNonNullNumericalIterator(cidx).max
@@ -169,7 +91,7 @@ class Dataset(
     val fs = Seq(count, mean, std, min, q1, q2, q3, max)
     val cs = numericalColumnIndices
     val data = fs map (f => cs map f)
-    val ds = new Dataset(cs map columnNameArray, data)
+    val ds = Dataset(cs map columnNameArray, data)
 
     ds.index(Seq("count", "mean", "std", "min", "q1", "q2", "q3", "max"))
     ds
@@ -207,9 +129,100 @@ object Dataset:
 
 //  def apply(columns: collection.Seq[String], data: Matrix[Double]): Dataset =
 //    new Dataset(columns, data)
-//
-//  def apply(columns: collection.Seq[String], data: Seq[Seq[Any]]): Dataset =
-//    new Dataset(columns, Matrix.fromArray(data map (_ map (_.asInstanceOf[Number].doubleValue) toArray) toArray))
+
+  def apply(
+      columns: collection.Seq[String],
+      data: Seq[Seq[Any]],
+      types: Seq[Type] = Seq(InferType),
+      indices: Seq[Any] = Nil,
+  ): Dataset =
+    val columnNameArray = ArrayBuffer from columns
+    val columnNameMap = columnNameArray.zipWithIndex to mutable.HashMap
+    val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
+    val columnTypeArray = ArrayBuffer from types
+    val rowIndexArray: ArrayBuffer[Any] = dataArray.indices to ArrayBuffer
+
+    require(columnNameArray.nonEmpty, "a dataset needs at least one column")
+    require(
+      dataArray.isEmpty || dataArray.head.length == columnNameArray.length,
+      "the number of data columns should be equal to the number of column names",
+    )
+    require(
+      columnTypeArray.length == 1 || columnTypeArray.length == columnNameArray.length,
+      "there should be one type or the same number of types as there are columns",
+    )
+
+    if columnTypeArray.length == 1 && columnNameArray.length > 1 then
+      for (_ <- 2 to columnNameArray.length)
+        columnTypeArray += columnTypeArray.head
+
+    def convertError(a: Any, to: String, r: Int, c: Int) =
+      sys.error(s"conversion error [${r + 1}, ${c + 1}]: '$a' cannot be converted to type '$to'")
+
+    for (c <- columnNameArray.indices) {
+      var tempType = columnTypeArray(c)
+      var changed = false
+      val tempValues = new ArrayBuffer[Any](dataArray.length)
+
+      for (r <- dataArray.indices) {
+        val d = dataArray(r)(c)
+        val prevTempType = tempType
+
+        columnTypeArray(c) match
+          case InferType if d == null => tempValues += null
+          case InferType =>
+            val (t, v) = IntType.convert(d) match
+              case None =>
+                FloatType.convert(d) match
+                  case None =>
+                    BoolType.convert(d) match
+                      case None    => (StringType, String.valueOf(d))
+                      case Some(c) => (BoolType, c)
+                  case Some(c) => (FloatType, c)
+              case Some(c) => (IntType, c)
+
+            tempType = t
+            tempValues += v
+          case t => tempValues += t.convert(d, true) getOrElse convertError(d, t.name, r, c)
+
+        columnTypeArray(c) match
+          case InferType =>
+            if prevTempType != InferType then
+              tempType = (prevTempType, tempType) match
+                case (IntType, t @ (IntType | FloatType)) => t
+                case (FloatType, FloatType | IntType)     => FloatType
+                case (BoolType, BoolType)                 => BoolType
+                case _                                    => StringType
+              if prevTempType != tempType then changed = true
+          //        case MixedType => // todo
+          case _ =>
+      }
+
+      if columnTypeArray(c) == InferType then
+        if dataArray.isEmpty then columnTypeArray(c) = UnknownType
+        else
+          columnTypeArray(c) = tempType
+
+          if changed || tempType == StringType then
+            for (r <- dataArray.indices)
+              tempValues(r) =
+                tempType.convert(dataArray(r)(c), true) getOrElse convertError(dataArray(r)(c), tempType.name, r, c)
+          else
+            for (r <- dataArray.indices)
+              tempValues(r) =
+                tempType.convert(tempValues(r), true) getOrElse convertError(tempValues(r), tempType.name, r, c)
+
+      for (r <- dataArray.indices)
+        dataArray(r)(c) = tempValues(r)
+    }
+
+    new Dataset(
+      columnNameArray,
+      columnNameMap,
+      dataArray,
+      columnTypeArray,
+      rowIndexArray,
+    )
 
   def fromString(s: String): Dataset =
     val csv = CSVRead.fromFile(s).get
