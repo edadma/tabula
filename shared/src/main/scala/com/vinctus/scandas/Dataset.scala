@@ -8,6 +8,7 @@ import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.language.postfixOps
+import scala.util.Random
 
 class Dataset(
     columns: Seq[String],
@@ -172,6 +173,13 @@ class Dataset(
 
     ds.index(Seq("count", "mean", "std", "min", "q1", "q2", "q3", "max"))
     ds
+
+//  def sample(n: Int): Dataset =
+//    require(n >= 0, "number of samples must be non-negative")
+//
+//    val indices = new mutable.HashSet[Int]
+//
+//    while indices.size < n do indices += Random.nextInt(rows)
 
   def shape: (Int, Int) = (rows, cols)
 
