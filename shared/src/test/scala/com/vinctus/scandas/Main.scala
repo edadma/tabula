@@ -15,8 +15,7 @@ object Main extends App:
   )
 
   ds.info()
-//  ds.describe.print
-  println(ds.percentile(0, 70))
-  println(ds.percentile(0, 50))
+  ds.describe.print()
+
 //  ds.print()
 //  println(ds.dataArray.flatten map (a => if a == null then "<null>" else a.getClass))

@@ -105,7 +105,7 @@ class Dataset(
   def std(cidx: Int): Double =
     val m = mean(cidx)
 
-    (columnNonNullNumericalIterator(cidx) map (a => (a - m) * (a - m)) sum) / (rows - 1)
+    math.sqrt((columnNonNullNumericalIterator(cidx) map (a => (a - m) * (a - m)) sum) / (rows - 1))
 
   def rows: Int = dataArray.length
 
@@ -146,6 +146,7 @@ class Dataset(
       },
     )
 
+  // https://statisticsbyjim.com/basics/percentiles/
   def percentile(cidx: Int, percent: Int): Double =
     val data = columnNonNullNumericalIterator(cidx).toIndexedSeq.sorted
     val p = percent / 100d
@@ -157,7 +158,20 @@ class Dataset(
     if rank.isWhole then lower
     else (data(upperIndex) - lower) * (rank - rank.toInt) + lower
 
-//  def describe: Dataset =
+  def q1(cidx: Int): Double = percentile(cidx, 25)
+
+  def q2(cidx: Int): Double = percentile(cidx, 50)
+
+  def q3(cidx: Int): Double = percentile(cidx, 75)
+
+  def describe: Dataset =
+    val fs = Seq(count, mean, std, min, q1, q2, q3, max)
+    val cs = numericalColumnIndices
+    val data = fs map (f => cs map f)
+    val ds = new Dataset(cs map columnNameArray, data)
+
+    ds.index(Seq("count", "mean", "std", "min", "q1", "q2", "q3", "max"))
+    ds
 
   def shape: (Int, Int) = (rows, cols)
 
