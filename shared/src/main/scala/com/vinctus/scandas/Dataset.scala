@@ -15,9 +15,10 @@ class Dataset(
     types: Seq[Type] = Seq(InferType),
 ):
   private val columnNameArray = ArrayBuffer from columns
-  private val columnNameMap = new mutable.HashMap[String, Int]
+  private val columnNameMap = columnNameArray.zipWithIndex to mutable.HashMap
   private val columnTypeArray = ArrayBuffer from types
   private[scandas] val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
+  private val rowIndexArray: ArrayBuffer[Any] = dataArray.indices to ArrayBuffer
 
   require(columnNameArray.nonEmpty, "a dataset needs at least one column")
   require(
@@ -105,19 +106,19 @@ class Dataset(
 
   def numericalColumnIndices: Seq[Int] = 0 until cols filter (c => columnTypeArray(c).numerical)
 
-  def getRows(fidx: Int, tidx: Int): String =
+  def table(fidx: Int, tidx: Int): String =
     new TextTable() {
       headerSeq("" +: columnNameArray)
 
       for (i <- fidx to tidx)
-        rowSeq(i +: dataArray(i))
+        rowSeq(rowIndexArray(i) +: dataArray(i))
 
       1 +: numericalColumnIndices.map(_ + 2) foreach rightAlignment
     }.toString
 
-  def head: String = getRows(0, 9 min (rows - 1))
+  def head: String = table(0, 9 min (rows - 1))
 
-  def tail: String = getRows(rows - 10 max 0, rows - 1)
+  def tail: String = table(rows - 10 max 0, rows - 1)
 
   def info(): Unit =
     println(s"<class ${getClass.getName}>")
@@ -127,7 +128,7 @@ class Dataset(
         header("#", "Column", "Non-Null Count", "Datatype")
 
         for (((n, t), i) <- columnNameArray zip columnTypeArray zipWithIndex)
-          this.row(i, n, apply(i).count(_ != null), t.name)
+          this.row(i, n, columnNonNullIterator[Any](i).count(_ => true), t.name)
 
         rightAlignment(1)
         rightAlignment(3)
@@ -142,7 +143,14 @@ class Dataset(
 
   def apply(cidx: Int): IndexedSeq[Any] = dataArray map (_(cidx)) to ArraySeq
 
+  def columnNonNullIterator[T](cidx: Int): Iterator[T] =
+    (dataArray.iterator map (_(cidx)) filter (_ != null)).asInstanceOf[Iterator[T]]
+
   def iterator: Iterator[IndexedSeq[Any]] = dataArray.iterator map (_.toIndexedSeq)
+
+  def index(s: Seq[Any]): Unit =
+    require(s.length == rows, "sequence of indices should be the same length as the number of rows")
+    s.zipWithIndex foreach { case (v, i) => rowIndexArray(i) = v }
 
   override def toString: String = head
 
