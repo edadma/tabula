@@ -11,11 +11,11 @@ import scala.language.postfixOps
 import scala.util.Random
 
 class Dataset private (
-    private val columnNameArray: Vector[String],
-    private val columnNameMap: Map[String, Int],
-    private val dataArray: Vector[Vector[Any]],
-    private val columnTypeArray: Vector[Type],
-    private val rowIndexArray: Vector[Any],
+    columnNameArray: Vector[String],
+    columnNameMap: Map[String, Int],
+    dataArray: Vector[Vector[Any]],
+    columnTypeArray: Vector[Type],
+    rowIndexArray: Vector[Any],
 ):
   def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
 
