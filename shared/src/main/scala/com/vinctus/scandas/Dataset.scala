@@ -18,7 +18,6 @@ class Dataset(
   private val columnNameMap = new mutable.HashMap[String, Int]
   private val columnTypeArray = ArrayBuffer from types
   private[scandas] val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
-  private val nonNullCounts = ArrayBuffer.fill(cols)(0)
 
   require(columnNameArray.nonEmpty, "a dataset needs at least one column")
   require(
@@ -31,7 +30,7 @@ class Dataset(
   )
 
   if columnTypeArray.length == 1 && cols > 1 then
-    for (i <- 2 to cols)
+    for (_ <- 2 to cols)
       columnTypeArray += columnTypeArray.head
 
   private def convertError(a: Any, to: String, r: Int, c: Int) =
@@ -47,13 +46,14 @@ class Dataset(
       val prevTempType = tempType
 
       columnTypeArray(c) match
-        case InferType | MixedType =>
+        case InferType if d == null => tempValues += null
+        case InferType =>
           val (t, v) = IntType.convert(d) match
             case None =>
               FloatType.convert(d) match
                 case None =>
                   BoolType.convert(d) match
-                    case None    => (StringType, d.toString)
+                    case None    => (StringType, String.valueOf(d))
                     case Some(c) => (BoolType, c)
                 case Some(c) => (FloatType, c)
             case Some(c) => (IntType, c)
@@ -71,8 +71,8 @@ class Dataset(
               case (BoolType, BoolType)                 => BoolType
               case _                                    => StringType
             if prevTempType != tempType then changed = true
-        case MixedType => // todo
-        case _         =>
+//        case MixedType => // todo
+        case _ =>
     }
 
     if columnTypeArray(c) == InferType then
@@ -93,12 +93,8 @@ class Dataset(
       dataArray(r)(c) = tempValues(r)
   }
 
-  def col(name: String): Seq[Any] = col(columnNameMap(name))
-
-  def col(cidx: Int): Seq[Any] = data map (_(cidx)) to ArraySeq
-
   def mean(cidx: Int): Double =
-    col(cidx) match
+    apply(cidx) match
       case c: Seq[Double] => c.sum / c.length
 
   def rows: Int = dataArray.length
@@ -116,7 +112,7 @@ class Dataset(
       for (i <- fidx to tidx)
         rowSeq(i +: dataArray(i))
 
-      1 +: (numericalColumnIndices map (_ + 2)) foreach rightAlignment
+      1 +: numericalColumnIndices.map(_ + 2) foreach rightAlignment
     }.toString
 
   def head: String = getRows(0, 9 min (rows - 1))
@@ -130,8 +126,8 @@ class Dataset(
       new TextTable() {
         header("#", "Column", "Non-Null Count", "Datatype")
 
-        for ((((n, t), c), i) <- columnNameArray zip columnTypeArray zip nonNullCounts zipWithIndex)
-          this.row(i, n, c, t.name)
+        for (((n, t), i) <- columnNameArray zip columnTypeArray zipWithIndex)
+          this.row(i, n, apply(i).count(_ != null), t.name)
 
         rightAlignment(1)
         rightAlignment(3)
@@ -142,7 +138,9 @@ class Dataset(
 
   def row(ridx: Int): IndexedSeq[Any] = dataArray(ridx).toIndexedSeq
 
-  def apply(cidx: Int): IndexedSeq[Any] = dataArray map (_(cidx)) toIndexedSeq
+  def apply(cname: String): IndexedSeq[Any] = apply(columnNameMap(cname))
+
+  def apply(cidx: Int): IndexedSeq[Any] = dataArray map (_(cidx)) to ArraySeq
 
   def iterator: Iterator[IndexedSeq[Any]] = dataArray.iterator map (_.toIndexedSeq)
 

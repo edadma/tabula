@@ -3,8 +3,8 @@ package com.vinctus.scandas
 object Type:
   def from(dtype: String): Type =
     dtype match
-      case "Infer" | "infer"   => InferType
-      case "Mixed" | "mixed"   => MixedType
+      case "Infer" | "infer" => InferType
+//      case "Mixed" | "mixed"   => MixedType
       case "Int" | "int"       => IntType
       case "Float" | "float"   => FloatType
       case "String" | "string" => StringType
@@ -16,8 +16,8 @@ abstract class Type(val name: String, val numerical: Boolean):
 case object InferType extends Type("infer", false):
   def convert(a: Any, coerse: Boolean): Option[Any] = sys.error("InferType.convert()")
 
-case object MixedType extends Type("mixed", false):
-  def convert(a: Any, coerse: Boolean): Option[Any] = sys.error("MixedType.convert()")
+//case object MixedType extends Type("mixed", false):
+//  def convert(a: Any, coerse: Boolean): Option[Any] = sys.error("MixedType.convert()")
 
 case object UnknownType extends Type("unknown", false):
   def convert(a: Any, coerse: Boolean): Option[Any] = sys.error("UnknownType.convert()")
@@ -28,6 +28,7 @@ case object IntType extends Type("int", true):
 
   def convert(a: Any, coerse: Boolean = false): Option[Any] =
     a match
+      case null                             => Some(null)
       case n: Int                           => Some(n.toLong)
       case _: Long                          => Some(a)
       case n: Double if coerse || n.isWhole => if LongMinDouble <= n && n <= LongMaxDouble then Some(n.toLong) else None
@@ -37,6 +38,7 @@ case object IntType extends Type("int", true):
 case object FloatType extends Type("float", true):
   def convert(a: Any, coerse: Boolean = false): Option[Any] =
     a match
+      case null      => Some(null)
       case n: Int    => Some(n.toDouble)
       case n: Long   => Some(n.toDouble)
       case _: Double => Some(a)
@@ -46,12 +48,13 @@ case object FloatType extends Type("float", true):
 case object BoolType extends Type("bool", false):
   def convert(a: Any, coerse: Boolean = false): Option[Any] =
     a match
+      case null                          => Some(null)
       case "t" | "T" | "true" | "True"   => Some(true)
       case "f" | "F" | "false" | "False" => Some(false)
       case _                             => None
 
 case object StringType extends Type("string", false):
-  def convert(a: Any, coerse: Boolean = false): Option[Any] = Some(a.toString)
+  def convert(a: Any, coerse: Boolean = false): Option[Any] = Some(if a == null then null else a.toString)
 
 // todo TimestampType
 // todo DateType

@@ -4,9 +4,9 @@ object Main extends App:
 
   val ds = new Dataset(
     Seq("column 1", "column 2"),
-    for (r <- 1 to 2) yield for (c <- 1 to 2) yield if c == 1 then s"s$r.$c" else s"$r$c",
+    for (r <- 1 to 2) yield for (c <- 1 to 2) yield if r == 1 && c == 1 then null else s"$r$c",
   )
 
   ds.info()
   println(ds)
-  println(ds.dataArray.flatten map (_.getClass))
+  println(ds.dataArray.flatten map (a => if a == null then "<null>" else a.getClass))
