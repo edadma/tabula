@@ -11,11 +11,11 @@ import scala.language.postfixOps
 import scala.util.Random
 
 class Dataset private (
-    private val columnNameArray: ArrayBuffer[String],
-    private val columnNameMap: mutable.HashMap[String, Int],
-    private val dataArray: ArrayBuffer[ArrayBuffer[Any]],
-    private val columnTypeArray: ArrayBuffer[Type],
-    private val rowIndexArray: ArrayBuffer[Any],
+    private val columnNameArray: Vector[String],
+    private val columnNameMap: Map[String, Int],
+    private val dataArray: Vector[Vector[Any]],
+    private val columnTypeArray: Vector[Type],
+    private val rowIndexArray: Vector[Any],
 ):
   def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
 
@@ -94,9 +94,9 @@ class Dataset private (
     val fs = Seq(count, mean, std, min, q1, q2, q3, max)
     val cs = numericalColumnIndices
     val data = fs map (f => cs map f)
-    val ds = Dataset(cs map columnNameArray, data)
+    val ds =
+      Dataset(cs map columnNameArray, data, indices = Seq("count", "mean", "std", "min", "q1", "q2", "q3", "max"))
 
-    ds.index(Seq("count", "mean", "std", "min", "q1", "q2", "q3", "max"))
     ds
 
   def sample(n: Int): Dataset =
@@ -106,13 +106,13 @@ class Dataset private (
 
     while indicesSet.size < n do indicesSet += Random.nextInt(rows)
 
-    val indices = indicesSet to ArrayBuffer
+    val indices = indicesSet.toVector
 
     new Dataset(
-      columnNameArray.clone,
-      columnNameMap.clone,
+      columnNameArray,
+      columnNameMap,
       indices map dataArray,
-      columnTypeArray.clone,
+      columnTypeArray,
       indices map rowIndexArray,
     )
 
@@ -132,16 +132,13 @@ class Dataset private (
 
   def iterator: Iterator[IndexedSeq[Any]] = dataArray.iterator map (_.toIndexedSeq)
 
-  def index(s: Seq[Any]): Unit =
+  def index(s: Seq[Any]): Dataset =
     require(s.length == rows, "sequence of indices should be the same length as the number of rows")
-    s.zipWithIndex foreach { case (v, i) => rowIndexArray(i) = v }
+    new Dataset(columnNameArray, columnNameMap, dataArray, columnTypeArray, s.toVector)
 
   override def toString: String = head
 
 object Dataset:
-
-//  def apply(columns: collection.Seq[String], data: Matrix[Double]): Dataset =
-//    new Dataset(columns, data)
 
   def apply(
       columns: collection.Seq[String],
@@ -149,11 +146,11 @@ object Dataset:
       types: Seq[Type] = Seq(InferType),
       indices: Seq[Any] = Nil,
   ): Dataset =
-    val columnNameArray = ArrayBuffer from columns
-    val columnNameMap = columnNameArray.zipWithIndex to mutable.HashMap
+    val columnNameArray = Vector from columns
+    val columnNameMap = columnNameArray.zipWithIndex.toMap
     val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
     val columnTypeArray = ArrayBuffer from types
-    val rowIndexArray: ArrayBuffer[Any] = dataArray.indices to ArrayBuffer
+    val rowIndexArray = (if indices.isEmpty then dataArray.indices else indices).toVector
 
     require(columnNameArray.nonEmpty, "a dataset needs at least one column")
     require(
@@ -163,6 +160,10 @@ object Dataset:
     require(
       columnTypeArray.length == 1 || columnTypeArray.length == columnNameArray.length,
       "there should be one type or the same number of types as there are columns",
+    )
+    require(
+      rowIndexArray.length == dataArray.length,
+      "there should be no indices or the same number of indices as there are rows",
     )
 
     if columnTypeArray.length == 1 && columnNameArray.length > 1 then
@@ -232,8 +233,8 @@ object Dataset:
     new Dataset(
       columnNameArray,
       columnNameMap,
-      dataArray,
-      columnTypeArray,
+      dataArray map (_.toVector) toVector,
+      columnTypeArray.toVector,
       rowIndexArray,
     )
 
