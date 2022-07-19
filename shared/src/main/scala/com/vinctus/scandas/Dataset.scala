@@ -107,6 +107,8 @@ class Dataset(
 
   def cols: Int = columnNameArray.length
 
+  def numericalColumnIndices: Seq[Int] = 0 until cols filter (c => columnTypeArray(c).numerical)
+
   def getRows(fidx: Int, tidx: Int): String =
     new TextTable() {
       headerSeq("" +: columnNameArray)
@@ -114,7 +116,7 @@ class Dataset(
       for (i <- fidx to tidx)
         rowSeq(i +: dataArray(i))
 
-      1 to cols foreach rightAlignment
+      1 +: (numericalColumnIndices map (_ + 2)) foreach rightAlignment
     }.toString
 
   def head: String = getRows(0, 9 min (rows - 1))
@@ -129,12 +131,20 @@ class Dataset(
         header("#", "Column", "Non-Null Count", "Datatype")
 
         for ((((n, t), c), i) <- columnNameArray zip columnTypeArray zip nonNullCounts zipWithIndex)
-          row(i, n, c, t.name)
+          this.row(i, n, c, t.name)
 
         rightAlignment(1)
         rightAlignment(3)
       },
     )
+
+  def shape: (Int, Int) = (rows, cols)
+
+  def row(ridx: Int): IndexedSeq[Any] = dataArray(ridx).toIndexedSeq
+
+  def apply(cidx: Int): IndexedSeq[Any] = dataArray map (_(cidx)) toIndexedSeq
+
+  def iterator: Iterator[IndexedSeq[Any]] = dataArray.iterator map (_.toIndexedSeq)
 
   override def toString: String = head
 
