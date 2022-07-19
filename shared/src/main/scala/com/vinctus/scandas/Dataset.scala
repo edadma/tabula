@@ -17,7 +17,7 @@ class Dataset(
   private val columnNameArray = ArrayBuffer from columns
   private val columnNameMap = new mutable.HashMap[String, Int]
   private val columnTypeArray = ArrayBuffer from types
-  private val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
+  private[scandas] val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
   private val nonNullCounts = ArrayBuffer.fill(cols)(0)
 
   require(columnNameArray.nonEmpty, "a dataset needs at least one column")
@@ -79,7 +79,7 @@ class Dataset(
       else
         columnTypeArray(c) = tempType
 
-        if changed then
+        if changed || tempType == StringType then
           for (r <- dataArray.indices)
             tempValues(r) =
               tempType.convert(dataArray(r)(c)) getOrElse convertError(dataArray(r)(c), tempType.name, r, c)
