@@ -129,6 +129,8 @@ class Dataset(
 
   def tail: String = table(rows - 10 max 0, rows - 1)
 
+  def print(): Unit = println(table(0, rows - 1))
+
   def info(): Unit =
     println(s"<class ${getClass.getName}>")
     println(s"$rows rows; $cols columns")
@@ -143,6 +145,17 @@ class Dataset(
         rightAlignment(3)
       },
     )
+
+  def percentile(cidx: Int, percent: Int): Double =
+    val data = columnNonNullNumericalIterator(cidx).toIndexedSeq.sorted
+    val p = percent / 100d
+    val rank = p * (data.length + 1)
+    val upperIndex = rank.toInt
+    val lowerIndex = upperIndex - 1
+    val lower = data(lowerIndex)
+
+    if rank.isWhole then lower
+    else (data(upperIndex) - lower) * (rank - rank.toInt) + lower
 
 //  def describe: Dataset =
 
@@ -188,6 +201,4 @@ object Dataset:
       if (columns eq null) (csv.head, csv drop 1)
       else (columns, csv)
 
-    Dataset(header, data map (_ map (_.toDouble)))
-
-// todo: columns: Seq[String] | Int // so that you can specify starting column number
+    Dataset(header, data)
