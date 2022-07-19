@@ -35,7 +35,7 @@ class Dataset(
       columnTypeArray += columnTypeArray.head
 
   private def convertError(a: Any, to: String, r: Int, c: Int) =
-    sys.error(s"conversion error [$r, $c]: '$a' cannot be converted to type '$to'")
+    sys.error(s"conversion error [${r + 1}, ${c + 1}]: '$a' cannot be converted to type '$to'")
 
   for (c <- columnNameArray.indices) {
     var tempType = columnTypeArray(c)
@@ -60,7 +60,7 @@ class Dataset(
 
           tempType = t
           tempValues += v
-        case t => tempValues(r) = t.convert(d) getOrElse convertError(d, t.name, r, c)
+        case t => tempValues += t.convert(d, true) getOrElse convertError(d, t.name, r, c)
 
       columnTypeArray(c) match
         case InferType =>
@@ -72,6 +72,7 @@ class Dataset(
               case _                                    => StringType
             if prevTempType != tempType then changed = true
         case MixedType => // todo
+        case _         =>
     }
 
     if columnTypeArray(c) == InferType then
@@ -82,10 +83,11 @@ class Dataset(
         if changed || tempType == StringType then
           for (r <- dataArray.indices)
             tempValues(r) =
-              tempType.convert(dataArray(r)(c)) getOrElse convertError(dataArray(r)(c), tempType.name, r, c)
+              tempType.convert(dataArray(r)(c), true) getOrElse convertError(dataArray(r)(c), tempType.name, r, c)
         else
           for (r <- dataArray.indices)
-            tempValues(r) = tempType.convert(tempValues(r)) getOrElse convertError(tempValues(r), tempType.name, r, c)
+            tempValues(r) =
+              tempType.convert(tempValues(r), true) getOrElse convertError(tempValues(r), tempType.name, r, c)
 
     for (r <- dataArray.indices)
       dataArray(r)(c) = tempValues(r)
