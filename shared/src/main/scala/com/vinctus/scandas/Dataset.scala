@@ -43,7 +43,10 @@ class Dataset private (
       headerSeq("" +: columnNameArray)
 
       for (i <- fidx to tidx)
-        rowSeq(rowIndexArray(i) +: dataArray(i))
+        rowSeq(rowIndexArray(i) +: dataArray(i).map {
+          case v: Double => f"$v%.3f"
+          case v         => v
+        })
 
       1 +: numericalColumnIndices.map(_ + 2) foreach rightAlignment
     }.toString
