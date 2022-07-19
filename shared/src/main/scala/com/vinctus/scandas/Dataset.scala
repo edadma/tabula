@@ -118,7 +118,7 @@ class Dataset private (
 
   def shape: (Int, Int) = (rows, cols)
 
-  def row(ridx: Int): IndexedSeq[Any] = dataArray(ridx).toIndexedSeq
+  def row(ridx: Int): IndexedSeq[Any] = dataArray(ridx)
 
   def apply(cname: String): IndexedSeq[Any] = apply(columnNameMap(cname))
 
@@ -130,7 +130,7 @@ class Dataset private (
   def columnNonNullNumericalIterator(cidx: Int): Iterator[Double] =
     columnNonNullIterator[Number](cidx) map (_.doubleValue)
 
-  def iterator: Iterator[IndexedSeq[Any]] = dataArray.iterator map (_.toIndexedSeq)
+  def iterator: Iterator[IndexedSeq[Any]] = dataArray.iterator
 
   def index(s: Seq[Any]): Dataset =
     require(s.length == rows, "sequence of indices should be the same length as the number of rows")
