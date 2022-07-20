@@ -37,11 +37,11 @@ class Dataset protected (
 
   def numericalColumnIndices: Seq[Int] = 0 until cols filter (c => columnTypeArray(c).numerical)
 
-  def table(fidx: Int, tidx: Int): String =
+  def table(from: Int, until: Int): String =
     new TextTable() {
       headerSeq("" +: columnNameArray)
 
-      for (i <- fidx to tidx)
+      for (i <- from until until)
         rowSeq(dataArray(i).map {
           case v: Double => f"$v%.3f"
           case v         => v
@@ -50,11 +50,11 @@ class Dataset protected (
       1 +: numericalColumnIndices.map(_ + 2) foreach rightAlignment
     }.toString
 
-  def head(n: Int = 10): Dataset = slice(0 until (n min rows))
+  def head(n: Int = 10): Dataset = slice(0, n min rows)
 
-  def tail(n: Int = 10): Dataset = slice((rows - n max 0) until rows)
+  def tail(n: Int = 10): Dataset = slice(rows - n max 0, rows)
 
-  def print(): Unit = println(table(0, rows - 1))
+  def print(): Unit = println(table(0, rows))
 
   def info(): Unit =
     println(s"<class ${getClass.getName}>")
@@ -106,11 +106,11 @@ class Dataset protected (
 
       ds
 
-  def slice(indices: collection.Seq[Int]): Dataset =
+  def slice(from: Int, until: Int): Dataset =
     new Dataset(
       columnNameMap,
       columnNameArray,
-      indices.iterator map dataArray toVector,
+      dataArray.slice(from, until),
       columnTypeArray,
     )
 
@@ -137,7 +137,12 @@ class Dataset protected (
 
     while indicesSet.size < count do indicesSet += Random.nextInt(rows)
 
-    slice(indicesSet.toVector)
+    new Dataset(
+      columnNameMap,
+      columnNameArray,
+      indicesSet.toVector.iterator map dataArray toVector,
+      columnTypeArray,
+    )
 
   def shape: (Int, Int) = (rows, cols)
 
@@ -176,7 +181,7 @@ class Dataset protected (
   override def toString: String =
     val n = 10
 
-    table(0, (n - 1) min (rows - 1))
+    table(0, n min rows)
 
 object Dataset:
 
