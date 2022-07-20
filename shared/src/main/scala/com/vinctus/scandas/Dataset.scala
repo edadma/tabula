@@ -22,7 +22,7 @@ class Dataset protected (
 
   def mean(cidx: Int): Double = columnNonNullNumericalIterator(cidx).sum / count(cidx)
 
-  def count(cidx: Int): Int = columnNonNullIterator[Any](cidx).count(_ => true)
+  def count(cidx: Int): Int = columnNonNullIterator(cidx).length
 
   def std(cidx: Int): Double =
     val m = mean(cidx)
@@ -114,19 +114,31 @@ class Dataset protected (
       columnTypeArray,
     )
 
-  protected def remove[T](idx: Int, vec: Vector[T]): Vector[T] =
+  protected def removeElement[T](idx: Int, vec: Vector[T]): Vector[T] =
     val (left, right) = vec.splitAt(idx)
 
     left ++ right.drop(1)
 
-  def removeColumn(cidx: Int): Dataset =
+  def remove(cidx: Int): Dataset =
     columnIndexCheck(cidx)
 
     new Dataset(
       columnNameMap.removed(columnNameArray(cidx)),
-      remove(cidx, columnNameArray),
-      dataArray map (r => remove(cidx + 1, r)),
-      remove(cidx, columnTypeArray),
+      removeElement(cidx, columnNameArray),
+      dataArray map (r => removeElement(cidx + 1, r)),
+      removeElement(cidx, columnTypeArray),
+    )
+
+  def insert(cidx: Int, column: String, data: collection.Seq[Any], typ: Type = InferType): Dataset =
+    columnIndexCheck(cidx)
+
+    val dataArray = data to ArrayBuffer
+
+    new Dataset(
+      columnNameMap.removed(columnNameArray(cidx)),
+      removeElement(cidx, columnNameArray),
+      dataArray map (r => removeElement(cidx + 1, r)),
+      removeElement(cidx, columnTypeArray),
     )
 
   def sample(n: Int): Dataset =
