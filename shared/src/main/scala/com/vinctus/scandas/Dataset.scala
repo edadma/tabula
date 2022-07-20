@@ -129,17 +129,17 @@ class Dataset protected (
       removeElement(cidx, columnTypeArray),
     )
 
-  def insert(cidx: Int, column: String, data: collection.Seq[Any], typ: Type = InferType): Dataset =
-    columnIndexCheck(cidx)
-
-    val dataArray = data to ArrayBuffer
-
-    new Dataset(
-      columnNameMap.removed(columnNameArray(cidx)),
-      removeElement(cidx, columnNameArray),
-      dataArray map (r => removeElement(cidx + 1, r)),
-      removeElement(cidx, columnTypeArray),
-    )
+//  def insert(cidx: Int, column: String, data: collection.Seq[Any], typ: Type = InferType): Dataset =
+//    columnIndexCheck(cidx)
+//
+//    val dataArray = data to ArrayBuffer
+//
+//    new Dataset(
+//      columnNameMap.removed(columnNameArray(cidx)),
+//      removeElement(cidx, columnNameArray),
+//      dataArray map (r => removeElement(cidx + 1, r)),
+//      removeElement(cidx, columnTypeArray),
+//    )
 
   def sample(n: Int): Dataset =
     require(n >= 0, "number of samples must be non-negative")
