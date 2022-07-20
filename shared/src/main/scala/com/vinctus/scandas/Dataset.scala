@@ -11,8 +11,8 @@ import scala.language.postfixOps
 import scala.util.Random
 
 class Dataset protected (
-    columnNameArray: Vector[String],
     columnNameMap: Map[String, Int],
+    columnNameArray: Vector[String],
     dataArray: Vector[Vector[Any]],
     columnTypeArray: Vector[Type],
 ):
@@ -73,6 +73,7 @@ class Dataset protected (
 
   // https://statisticsbyjim.com/basics/percentiles/
   def percentile(cidx: Int, percent: Int): Double =
+    columnIndexCheck(cidx)
     val data = columnNonNullNumericalIterator(cidx).toIndexedSeq.sorted
 
     if data.isEmpty then Double.NaN
@@ -107,10 +108,25 @@ class Dataset protected (
 
   def slice(indices: collection.Seq[Int]): Dataset =
     new Dataset(
-      columnNameArray,
       columnNameMap,
+      columnNameArray,
       indices.iterator map dataArray toVector,
       columnTypeArray,
+    )
+
+  protected def remove[T](idx: Int, vec: Vector[T]): Vector[T] =
+    val (left, right) = vec.splitAt(idx)
+
+    left ++ right.drop(1)
+
+  def removeColumn(cidx: Int): Dataset =
+    columnIndexCheck(cidx)
+
+    new Dataset(
+      columnNameMap.removed(columnNameArray(cidx)),
+      remove(cidx, columnNameArray),
+      dataArray map (r => remove(cidx + 1, r)),
+      remove(cidx, columnTypeArray),
     )
 
   def sample(n: Int): Dataset =
@@ -149,8 +165,8 @@ class Dataset protected (
   def index(indices: Seq[Any]): Dataset =
     require(indices.length == rows, "sequence of indices should be the same length as the number of rows")
     new Dataset(
-      columnNameArray,
       columnNameMap,
+      columnNameArray,
       dataArray zip indices map { case (r, i) => i +: r.tail },
       columnTypeArray,
     )
@@ -170,13 +186,14 @@ object Dataset:
       types: Seq[Type] = Seq(InferType),
       indices: Seq[Any] = Nil,
   ): Dataset =
+    val columnNameMap = columns.zipWithIndex.toMap
     val columnNameArray = Vector from columns
-    val columnNameMap = columnNameArray.zipWithIndex.toMap
     val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
     val columnTypeArray = ArrayBuffer from types
     val rowIndexArray = (if indices.isEmpty then dataArray.indices else indices).toVector
 
     require(columnNameArray.nonEmpty, "a dataset needs at least one column")
+    require(columnNameArray.distinct.length == columnNameArray.length, "column names must be distinct")
     require(
       dataArray.isEmpty || dataArray.forall(_.length == columnNameArray.length),
       "the number of data columns should be equal to the number of column names",
@@ -258,8 +275,8 @@ object Dataset:
     }
 
     new Dataset(
-      columnNameArray,
       columnNameMap,
+      columnNameArray,
       dataArray zip rowIndexArray map { case (r, i) => (i +: r).toVector } toVector,
       columnTypeArray.toVector,
     )
