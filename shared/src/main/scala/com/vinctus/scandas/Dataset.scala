@@ -15,7 +15,6 @@ class Dataset private (
     columnNameMap: Map[String, Int],
     dataArray: Vector[Vector[Any]],
     columnTypeArray: Vector[Type],
-    rowIndexArray: Vector[Any],
 ):
   def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
 
@@ -43,7 +42,7 @@ class Dataset private (
       headerSeq("" +: columnNameArray)
 
       for (i <- fidx to tidx)
-        rowSeq(rowIndexArray(i) +: dataArray(i).map {
+        rowSeq(dataArray(i).map {
           case v: Double => f"$v%.3f"
           case v         => v
         })
@@ -121,28 +120,39 @@ class Dataset private (
       columnNameMap,
       indices map dataArray,
       columnTypeArray,
-      indices map rowIndexArray,
     )
 
   def shape: (Int, Int) = (rows, cols)
 
-  def row(ridx: Int): IndexedSeq[Any] = dataArray(ridx)
+  def row(ridx: Int): IndexedSeq[Any] = dataArray(ridx).tail
 
   def apply(cname: String): IndexedSeq[Any] = apply(columnNameMap(cname))
 
-  def apply(cidx: Int): IndexedSeq[Any] = dataArray map (_(cidx)) to ArraySeq
+  private def columnIndexCheck(cidx: Int): Unit =
+    require(0 <= cidx && cidx < cols, "column index ranges from 0 to number of columns - 1")
+
+  def apply(cidx: Int): IndexedSeq[Any] =
+    columnIndexCheck(cidx)
+    dataArray map (_(cidx + 1)) to ArraySeq
 
   def columnNonNullIterator[T](cidx: Int): Iterator[T] =
-    (dataArray.iterator map (_(cidx)) filter (_ != null)).asInstanceOf[Iterator[T]]
+    columnIndexCheck(cidx)
+    (dataArray.iterator map (_(cidx + 1)) filter (_ != null)).asInstanceOf[Iterator[T]]
 
   def columnNonNullNumericalIterator(cidx: Int): Iterator[Double] =
+    columnIndexCheck(cidx)
     columnNonNullIterator[Number](cidx) map (_.doubleValue)
 
-  def iterator: Iterator[IndexedSeq[Any]] = dataArray.iterator
+  def iterator: Iterator[IndexedSeq[Any]] = dataArray.iterator map (_ drop 1)
 
-  def index(s: Seq[Any]): Dataset =
-    require(s.length == rows, "sequence of indices should be the same length as the number of rows")
-    new Dataset(columnNameArray, columnNameMap, dataArray, columnTypeArray, s.toVector)
+  def index(indices: Seq[Any]): Dataset =
+    require(indices.length == rows, "sequence of indices should be the same length as the number of rows")
+    new Dataset(
+      columnNameArray,
+      columnNameMap,
+      dataArray zip indices map { case (r, i) => i +: r.tail },
+      columnTypeArray,
+    )
 
   override def toString: String = head
 
@@ -244,9 +254,8 @@ object Dataset:
     new Dataset(
       columnNameArray,
       columnNameMap,
-      dataArray map (_.toVector) toVector,
+      dataArray zip rowIndexArray map { case (r, i) => (i +: r).toVector } toVector,
       columnTypeArray.toVector,
-      rowIndexArray,
     )
 
   def fromString(s: String): Dataset =
