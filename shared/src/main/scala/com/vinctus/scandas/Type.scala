@@ -1,5 +1,8 @@
 package com.vinctus.scandas
 
+import java.time.{Instant, LocalDateTime, ZoneOffset, ZonedDateTime}
+import scala.util.{Try, Success, Failure}
+
 object Type:
   def from(dtype: String): Type =
     dtype match
@@ -56,5 +59,18 @@ case object BoolType extends Type("bool", false):
 case object StringType extends Type("string", false):
   def convert(a: Any, coerse: Boolean = false): Option[Any] = Some(if a == null then null else a.toString)
 
+case object TimestampType extends Type("timestamp", false):
+  def convert(a: Any, coerse: Boolean = false): Option[Any] =
+    a match
+      case null       => Some(null)
+      case t: Instant => Some(t)
+      case s: String =>
+        Try(ZonedDateTime.parse(s)) match
+          case Success(t) => Some(t.toInstant)
+          case _ =>
+            Try(LocalDateTime.parse(s)) match
+              case Success(t) => Some(t.toInstant(ZoneOffset.UTC))
+              case _          => None
+      case _ => None
+
 // todo TimestampType
-// todo DateType

@@ -9,10 +9,17 @@ object Main extends App:
 
 //  val ds = Dataset.fromCSV("iris.csv")
 
-  val ds = Dataset(
-    Seq("Value"),
-    Seq(2, 4, 6, 8, 13, 16, 22, 35, 40, 42, 48).map(Seq(_)),
-  )
+//  val ds = Dataset(
+//    Seq("Value"),
+//    Seq(2, 4, 6, 8, 13, 16, 22, 35, 40, 42, 48).map(Seq(_)),
+//  )
+
+  val ds = Dataset.fromString("""
+      |time,value
+      |2018-08-22T19:10:53.094,123
+      |""".trim.stripMargin)
+
+//  val ds = Dataset.fromCSV("iris.csv")
 
   ds.info()
   ds.describe.print()

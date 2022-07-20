@@ -75,14 +75,18 @@ class Dataset private (
   // https://statisticsbyjim.com/basics/percentiles/
   def percentile(cidx: Int, percent: Int): Double =
     val data = columnNonNullNumericalIterator(cidx).toIndexedSeq.sorted
-    val p = percent / 100d
-    val rank = p * (data.length + 1)
-    val upperIndex = rank.toInt
-    val lowerIndex = upperIndex - 1
-    val lower = data(lowerIndex)
 
-    if rank.isWhole then lower
-    else (data(upperIndex) - lower) * (rank - rank.toInt) + lower
+    if data.isEmpty then Double.NaN
+    else if data.length < 3 then data.head
+    else
+      val p = percent / 100d
+      val rank = p * (data.length + 1)
+      val upperIndex = rank.toInt
+      val lowerIndex = upperIndex - 1
+      val lower = data(lowerIndex)
+
+      if rank.isWhole then lower
+      else (data(upperIndex) - lower) * (rank - rank.toInt) + lower
 
   def q1(cidx: Int): Double = percentile(cidx, 25)
 
@@ -93,18 +97,22 @@ class Dataset private (
   def describe: Dataset =
     val fs = Seq(count, mean, std, min, q1, q2, q3, max)
     val cs = numericalColumnIndices
-    val data = fs map (f => cs map f)
-    val ds =
-      Dataset(cs map columnNameArray, data, indices = Seq("count", "mean", "std", "min", "q1", "q2", "q3", "max"))
 
-    ds
+    if cs.isEmpty then Dataset(Seq("EMPTY"), Nil) // todo: pandas.describe() when there are no numeric columns
+    else
+      val data = fs map (f => cs map f)
+      val ds =
+        Dataset(cs map columnNameArray, data, indices = Seq("count", "mean", "std", "min", "25%", "50%", "75%", "max"))
+
+      ds
 
   def sample(n: Int): Dataset =
     require(n >= 0, "number of samples must be non-negative")
 
     val indicesSet = new mutable.HashSet[Int]
+    val count = n min rows
 
-    while indicesSet.size < n do indicesSet += Random.nextInt(rows)
+    while indicesSet.size < count do indicesSet += Random.nextInt(rows)
 
     val indices = indicesSet.toVector
 
@@ -190,7 +198,10 @@ object Dataset:
                 FloatType.convert(d) match
                   case None =>
                     BoolType.convert(d) match
-                      case None    => (StringType, String.valueOf(d))
+                      case None =>
+                        TimestampType.convert(d) match
+                          case None    => (StringType, String.valueOf(d))
+                          case Some(c) => (TimestampType, c)
                       case Some(c) => (BoolType, c)
                   case Some(c) => (FloatType, c)
               case Some(c) => (IntType, c)
