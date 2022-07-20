@@ -72,5 +72,3 @@ case object TimestampType extends Type("timestamp", false):
               case Success(t) => Some(t.toInstant(ZoneOffset.UTC))
               case _          => None
       case _ => None
-
-// todo TimestampType
