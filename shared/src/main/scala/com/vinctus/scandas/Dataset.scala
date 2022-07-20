@@ -10,7 +10,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.language.postfixOps
 import scala.util.Random
 
-class Dataset private (
+class Dataset protected (
     columnNameArray: Vector[String],
     columnNameMap: Map[String, Int],
     dataArray: Vector[Vector[Any]],
@@ -50,9 +50,9 @@ class Dataset private (
       1 +: numericalColumnIndices.map(_ + 2) foreach rightAlignment
     }.toString
 
-  def head: String = table(0, 9 min (rows - 1))
+  def head(n: Int = 10): Dataset = slice(0 until (n min rows))
 
-  def tail: String = table(rows - 10 max 0, rows - 1)
+  def tail(n: Int = 10): Dataset = slice((rows - n max 0) until rows)
 
   def print(): Unit = println(table(0, rows - 1))
 
@@ -105,6 +105,14 @@ class Dataset private (
 
       ds
 
+  def slice(indices: collection.Seq[Int]): Dataset =
+    new Dataset(
+      columnNameArray,
+      columnNameMap,
+      indices.iterator map dataArray toVector,
+      columnTypeArray,
+    )
+
   def sample(n: Int): Dataset =
     require(n >= 0, "number of samples must be non-negative")
 
@@ -113,14 +121,7 @@ class Dataset private (
 
     while indicesSet.size < count do indicesSet += Random.nextInt(rows)
 
-    val indices = indicesSet.toVector
-
-    new Dataset(
-      columnNameArray,
-      columnNameMap,
-      indices map dataArray,
-      columnTypeArray,
-    )
+    slice(indicesSet.toVector)
 
   def shape: (Int, Int) = (rows, cols)
 
@@ -128,7 +129,7 @@ class Dataset private (
 
   def apply(cname: String): IndexedSeq[Any] = apply(columnNameMap(cname))
 
-  private def columnIndexCheck(cidx: Int): Unit =
+  protected def columnIndexCheck(cidx: Int): Unit =
     require(0 <= cidx && cidx < cols, "column index ranges from 0 to number of columns - 1")
 
   def apply(cidx: Int): IndexedSeq[Any] =
@@ -154,7 +155,12 @@ class Dataset private (
       columnTypeArray,
     )
 
-  override def toString: String = head
+  def toArray: ArraySeq[ArraySeq[Any]] = iterator map (_ to ArraySeq) to ArraySeq
+
+  override def toString: String =
+    val n = 10
+
+    table(0, (n - 1) min (rows - 1))
 
 object Dataset:
 
