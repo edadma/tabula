@@ -52,6 +52,7 @@ case object BoolType extends Type("bool", false):
   def convert(a: Any, coerse: Boolean = false): Option[Any] =
     a match
       case null                          => Some(null)
+      case b: Boolean                    => Some(b)
       case "t" | "T" | "true" | "True"   => Some(true)
       case "f" | "F" | "false" | "False" => Some(false)
       case _                             => None

@@ -16,7 +16,7 @@ object Main extends App:
 
   val ds = Dataset.fromString("""
       |time,value
-      |2018-08-22T19:10:53.094,123
+      |2018-08-22T19:10:53.094,true
       |""".trim.stripMargin)
 
 //  val ds = Dataset.fromCSV("iris.csv")
