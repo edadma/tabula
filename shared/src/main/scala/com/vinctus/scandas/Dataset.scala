@@ -162,7 +162,7 @@ object Dataset:
 
     require(columnNameArray.nonEmpty, "a dataset needs at least one column")
     require(
-      dataArray.isEmpty || dataArray.head.length == columnNameArray.length,
+      dataArray.isEmpty || dataArray.forall(_.length == columnNameArray.length),
       "the number of data columns should be equal to the number of column names",
     )
     require(
