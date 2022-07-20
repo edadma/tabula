@@ -11,10 +11,10 @@ import scala.language.postfixOps
 import scala.util.Random
 
 class Dataset protected (
-    columnNameMap: Map[String, Int],
-    columnNameArray: Vector[String],
-    dataArray: Vector[Vector[Any]],
-    columnTypeArray: Vector[Type],
+    private val columnNameMap: Map[String, Int],
+    private val columnNameArray: Vector[String],
+    private val dataArray: Vector[Vector[Any]],
+    private val columnTypeArray: Vector[Type],
 ):
   def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
 
@@ -129,10 +129,13 @@ class Dataset protected (
       removeElement(cidx, columnTypeArray),
     )
 
-//  def insert(cidx: Int, column: String, data: collection.Seq[Any], typ: Type = InferType): Dataset =
+  protected def insertElement[T](idx: Int, elems: Vector[T], vec: Vector[T]): Vector[T] =
+    val (left, right) = vec.splitAt(idx)
+
+    left ++ elems ++ right
+
+//  def insert(cidx: Int, ds: Dataset): Dataset =
 //    columnIndexCheck(cidx)
-//
-//    val dataArray = data to ArrayBuffer
 //
 //    new Dataset(
 //      columnNameMap.removed(columnNameArray(cidx)),
