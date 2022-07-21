@@ -62,7 +62,13 @@ class Dataset protected (
     operator[Boolean](ds, op),
   )
 
-  protected def operation(f: Double => Double): Dataset = dataset(transform(f))
+  def operation(f: Double => Double): Dataset = dataset(transform(f))
+
+  def apply(f: Seq[Double] => Seq[Double]): Dataset =
+    val columns = for (c <- 0 until cols) yield f(columnNonNullNumericalIterator(c).toSeq)
+    val data = (for (r <- 0 until rows) yield dataArray(r).head +: columns.map(_(r)).toVector).toVector
+
+    dataset(data)
 
   def +(a: Double): Dataset = operation(_ + a)
 

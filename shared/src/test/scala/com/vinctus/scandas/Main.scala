@@ -2,10 +2,10 @@ package com.vinctus.scandas
 
 object Main extends App:
 
-  val ds = Dataset(
-    Seq("col1", "col2"),
-    for (r <- 1 to 3) yield for (c <- 1 to 2) yield if r == c then s"$r.$c" else s"$r$c",
-  )
+//  val ds = Dataset(
+//    Seq("col1", "col2"),
+//    for (r <- 1 to 3) yield for (c <- 1 to 2) yield if r == c then s"$r.$c" else s"$r$c",
+//  )
 
 //  val ds = Dataset.fromCSV("iris.csv")
 
@@ -22,8 +22,21 @@ object Main extends App:
 //  val ds = Dataset.fromCSV("iris.csv")
 //
 //  ds.info()
+
+  val ds = Dataset(
+    Seq("value"),
+    Seq(1, 15, 2, 2, 2, 3, 1, 1, 2, 2, 2, 3, 1, 1, 2).map(Seq(_)),
+  )
+
+  def zcode(s: Seq[Double]): Seq[Double] =
+    val mean = Sample.mean(s)
+    val std = Sample.std(s)
+
+    s map (x => (x - mean) / std)
+
   ds.describe.print()
-  println(ds.col1 + 3)
+  println(ds)
+  println(ds(zcode))
 
 //  ds.print()
 //  println(ds.dataArray.flatten map (a => if a == null then "<null>" else a.getClass))
