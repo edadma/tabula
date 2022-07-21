@@ -12,10 +12,12 @@ import scala.util.Random
 
 class Dataset protected (
     private val columnNameMap: Map[String, Int],
-    private val columnNameArray: Vector[String],
+    val columnNames: Vector[String],
     private val dataArray: Vector[Vector[Any]],
-    private val columnTypeArray: Vector[Type],
+    val columnTypes: Vector[Type],
 ):
+  lazy val columnNamesSet: Set[String] = columnNames.toSet
+
   def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
 
   def max(cidx: Int): Double = columnNonNullNumericalIterator(cidx).max
@@ -33,13 +35,13 @@ class Dataset protected (
 
   def isEmpty: Boolean = rows == 0
 
-  def cols: Int = columnNameArray.length
+  def cols: Int = columnNames.length
 
-  def numericalColumnIndices: Seq[Int] = 0 until cols filter (c => columnTypeArray(c).numerical)
+  def numericalColumnIndices: Seq[Int] = 0 until cols filter (c => columnTypes(c).numerical)
 
   def table(from: Int, until: Int): String =
     new TextTable() {
-      headerSeq("" +: columnNameArray)
+      headerSeq("" +: columnNames)
 
       for (i <- from until until)
         rowSeq(dataArray(i).map {
@@ -63,7 +65,7 @@ class Dataset protected (
       new TextTable() {
         header("#", "Column", "Non-Null Count", "Datatype")
 
-        for (((n, t), i) <- columnNameArray zip columnTypeArray zipWithIndex)
+        for (((n, t), i) <- columnNames zip columnTypes zipWithIndex)
           this.row(i, n, count(i), t.name)
 
         rightAlignment(1)
@@ -102,16 +104,16 @@ class Dataset protected (
     else
       val data = fs map (f => cs map f)
       val ds =
-        Dataset(cs map columnNameArray, data, indices = Seq("count", "mean", "std", "min", "25%", "50%", "75%", "max"))
+        Dataset(cs map columnNames, data, indices = Seq("count", "mean", "std", "min", "25%", "50%", "75%", "max"))
 
       ds
 
   def slice(from: Int, until: Int): Dataset =
     new Dataset(
       columnNameMap,
-      columnNameArray,
+      columnNames,
       dataArray.slice(from, until),
-      columnTypeArray,
+      columnTypes,
     )
 
   protected def removeElement[T](idx: Int, vec: Vector[T]): Vector[T] =
@@ -123,10 +125,10 @@ class Dataset protected (
     columnIndexCheck(cidx)
 
     new Dataset(
-      columnNameMap.removed(columnNameArray(cidx)),
-      removeElement(cidx, columnNameArray),
+      columnNameMap.removed(columnNames(cidx)),
+      removeElement(cidx, columnNames),
       dataArray map (r => removeElement(cidx + 1, r)),
-      removeElement(cidx, columnTypeArray),
+      removeElement(cidx, columnTypes),
     )
 
   protected def insertElement[T](idx: Int, elems: Vector[T], vec: Vector[T]): Vector[T] =
@@ -134,15 +136,22 @@ class Dataset protected (
 
     left ++ elems ++ right
 
-//  def insert(cidx: Int, ds: Dataset): Dataset =
-//    columnIndexCheck(cidx)
-//
-//    new Dataset(
-//      columnNameMap.removed(columnNameArray(cidx)),
-//      removeElement(cidx, columnNameArray),
-//      dataArray map (r => removeElement(cidx + 1, r)),
-//      removeElement(cidx, columnTypeArray),
-//    )
+  def insert(cidx: Int, ds: Dataset): Dataset =
+    columnIndexCheck(cidx)
+
+    if columnNamesSet.intersect(ds.columnNamesSet).nonEmpty then sys.error("insert: duplicate column name")
+
+    new Dataset(
+      columnNameMap map { case (k, v) =>
+        if v >= cidx then (k, v + ds.cols)
+        else (k, v)
+      },
+      (columnNames take cidx) ++ ds.columnNames ++ (columnNames drop cidx),
+      dataArray zip ds.dataArray map { case (thisr, thatr) =>
+        (thisr take cidx + 1) ++ thatr.tail ++ (thisr drop cidx + 1)
+      },
+      (columnTypes take cidx) ++ ds.columnTypes ++ (columnTypes drop cidx),
+    )
 
   def sample(n: Int): Dataset =
     require(n >= 0, "number of samples must be non-negative")
@@ -154,9 +163,9 @@ class Dataset protected (
 
     new Dataset(
       columnNameMap,
-      columnNameArray,
+      columnNames,
       indicesSet.toVector.iterator map dataArray toVector,
-      columnTypeArray,
+      columnTypes,
     )
 
   def shape: (Int, Int) = (rows, cols)
@@ -186,9 +195,9 @@ class Dataset protected (
     require(indices.length == rows, "sequence of indices should be the same length as the number of rows")
     new Dataset(
       columnNameMap,
-      columnNameArray,
+      columnNames,
       dataArray zip indices map { case (r, i) => i +: r.tail },
-      columnTypeArray,
+      columnTypes,
     )
 
   def toArray: ArraySeq[ArraySeq[Any]] = iterator map (_ to ArraySeq) to ArraySeq
