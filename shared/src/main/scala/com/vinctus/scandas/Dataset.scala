@@ -239,6 +239,13 @@ class Dataset protected (
 
   protected def rowsCheck(length: Int): Unit = require(length == rows, "number of rows don't match")
 
+  def apply(ds: Dataset): Dataset =
+    require(
+      ds.rows == rows && ds.cols == 1 && ds.columnTypes.head == BoolType,
+      "dataset should have the same number of rows and one boolean typed column",
+    )
+    apply(ds map (_.head.asInstanceOf[Boolean]))
+
   def apply(s: Seq[Boolean]): Dataset =
     rowsCheck(s.length)
     dataset(dataArray zip s flatMap { case (d, s) => if s then List(d) else Nil })
