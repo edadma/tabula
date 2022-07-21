@@ -108,13 +108,7 @@ class Dataset protected (
 
       ds
 
-  def rowSlice(from: Int, until: Int): Dataset =
-    new Dataset(
-      columnNameMap,
-      columnNames,
-      dataArray.slice(from, until),
-      columnTypes,
-    )
+  def rowSlice(from: Int, until: Int): Dataset = dataset(dataArray.slice(from, until))
 
   protected def removeElement[T](idx: Int, vec: Vector[T]): Vector[T] =
     val (left, right) = vec.splitAt(idx)
@@ -182,12 +176,7 @@ class Dataset protected (
 
     while indicesSet.size < count do indicesSet += Random.nextInt(rows)
 
-    new Dataset(
-      columnNameMap,
-      columnNames,
-      indicesSet.toVector.iterator map dataArray toVector,
-      columnTypes,
-    )
+    dataset(indicesSet.toVector.iterator map dataArray toVector)
 
   def shape: (Int, Int) = (rows, cols)
 
@@ -208,8 +197,22 @@ class Dataset protected (
       Vector(columnTypes(cidx)),
     )
 
+  protected def dataset(data: Vector[Vector[Any]]): Dataset =
+    new Dataset(
+      columnNameMap,
+      columnNames,
+      data,
+      columnTypes,
+    )
+
   protected def columnIndexCheck(cidx: Int): Unit =
     require(0 <= cidx && cidx < cols, "column index ranges from 0 to number of columns - 1")
+
+  protected def rowsCheck(length: Int): Unit = require(length == rows, "number of rows don't match")
+
+  def apply(s: Seq[Boolean]): Dataset =
+    rowsCheck(s.length)
+    dataset(dataArray zip s flatMap { case (d, s) => if s then List(d) else Nil })
 
   def apply(idx: Int): Vector[Any] = dataArray(idx).tail
 
