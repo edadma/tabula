@@ -62,6 +62,16 @@ class Dataset protected (
     operator[Boolean](ds, op),
   )
 
+  protected def operation(f: Double => Double): Dataset = dataset(transform(f))
+
+  def +(a: Double): Dataset = operation(_ + a)
+
+  def -(a: Double): Dataset = operation(_ - a)
+
+  def *(a: Double): Dataset = operation(_ * a)
+
+  def /(a: Double): Dataset = operation(_ / a)
+
   def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
 
   def max(cidx: Int): Double = columnNonNullNumericalIterator(cidx).max
