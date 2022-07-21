@@ -13,3 +13,7 @@ object Sample:
   def mean(s: Seq[Double]): Double = s.sum / count(s)
 
   def count(s: Seq[Double]): Double = s.length
+
+  def min(s: Seq[Double]): Double = s.min
+
+  def max(s: Seq[Double]): Double = s.max

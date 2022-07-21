@@ -70,6 +70,12 @@ class Dataset protected (
 
     dataset(data)
 
+  def applyScalar(f: Seq[Double] => Double): Dataset =
+    val columns = for (c <- 0 until cols) yield f(columnNonNullNumericalIterator(c).toSeq)
+    val data = Vector(dataArray.head.head +: columns.toVector)
+
+    dataset(data)
+
   def +(a: Double): Dataset = operation(_ + a)
 
   def -(a: Double): Dataset = operation(_ - a)
@@ -78,18 +84,15 @@ class Dataset protected (
 
   def /(a: Double): Dataset = operation(_ / a)
 
-  def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
+  def min: Dataset = applyScalar(Sample.min)
 
-  def max(cidx: Int): Double = columnNonNullNumericalIterator(cidx).max
+  def max: Dataset = applyScalar(Sample.max)
 
-  def mean(cidx: Int): Double = columnNonNullNumericalIterator(cidx).sum / count(cidx)
+  def mean: Dataset = applyScalar(Sample.mean)
 
-  def count(cidx: Int): Int = columnNonNullIterator(cidx).length
+  def count: Dataset = applyScalar(Sample.count)
 
-  def std(cidx: Int): Double =
-    val m = mean(cidx)
-
-    math.sqrt((columnNonNullNumericalIterator(cidx) map (a => (a - m) * (a - m)) sum) / (rows - 1))
+  def std: Dataset = applyScalar(Sample.std)
 
   def rows: Int = dataArray.length
 
@@ -131,7 +134,7 @@ class Dataset protected (
         header("#", "Column", "Non-Null Count", "Datatype")
 
         for (((n, t), i) <- columnNames zip columnTypes zipWithIndex)
-          this.row(i, n, count(i), t.name)
+          this.row(i, n, columnNonNullNumericalIterator(i).length, t.name)
 
         rightAlignment(1)
         rightAlignment(3)
