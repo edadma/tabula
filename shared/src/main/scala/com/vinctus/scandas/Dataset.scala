@@ -20,6 +20,8 @@ class Dataset protected (
     with Dynamic:
   lazy val columnNamesSet: Set[String] = columnNames.toSet
 
+  protected val LIMIT = 5
+
   def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
 
   def max(cidx: Int): Double = columnNonNullNumericalIterator(cidx).max
@@ -39,24 +41,31 @@ class Dataset protected (
 
   def numericalColumnIndices: Seq[Int] = 0 until cols filter (c => columnTypes(c).numerical)
 
-  def table(from: Int, until: Int): String =
+  def table(from: Int, until: Int, limit: Int = LIMIT): String =
     new TextTable() {
+      def tableRows(f: Int, u: Int): Unit =
+        for (i <- f until u)
+          rowSeq(dataArray(i).map {
+            case v: Double => f"$v%.4f"
+            case v         => v
+          })
+
       headerSeq("" +: columnNames)
 
-      for (i <- from until until)
-        rowSeq(dataArray(i).map {
-          case v: Double => f"$v%.3f"
-          case v         => v
-        })
+      if until - from > 2 * limit then
+        tableRows(from, from + limit)
+        rowSeq(".." +: Seq.fill(cols)("..."))
+        tableRows(until - limit, until)
+      else tableRows(from, until)
 
       1 +: numericalColumnIndices.map(_ + 2) foreach rightAlignment
     }.toString
 
-  def head(n: Int = 10): Dataset = rowSlice(0, n min rows)
+  def head(n: Int = 5): Dataset = rowSlice(0, n min rows)
 
-  def tail(n: Int = 10): Dataset = rowSlice(rows - n max 0, rows)
+  def tail(n: Int = 5): Dataset = rowSlice(rows - n max 0, rows)
 
-  def print(): Unit = println(table(0, rows))
+  def print(): Unit = println(table(0, rows, rows))
 
   def info(): Unit =
     println(s"<class ${getClass.getName}>")
@@ -241,10 +250,7 @@ class Dataset protected (
 
   def toArray: ArraySeq[ArraySeq[Any]] = iterator map (_ to ArraySeq) to ArraySeq
 
-  override def toString: String =
-    val n = 10
-
-    table(0, n min rows)
+  override def toString: String = table(0, rows)
 
 object Dataset:
 
