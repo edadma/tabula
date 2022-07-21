@@ -4,7 +4,7 @@ object Main extends App:
 
   val ds = Dataset(
     Seq("col1", "col2"),
-    for (r <- 1 to 12) yield for (c <- 1 to 2) yield if r == c then s"$r.$c" else s"$r$c",
+    for (r <- 1 to 3) yield for (c <- 1 to 2) yield if r == c then s"$r.$c" else s"$r$c",
   )
 
 //  val ds = Dataset.fromCSV("iris.csv")
@@ -23,7 +23,7 @@ object Main extends App:
 //
 //  ds.info()
   ds.describe.print()
-  println(ds.col1)
+  println(ds.col1 > 3)
 
 //  ds.print()
 //  println(ds.dataArray.flatten map (a => if a == null then "<null>" else a.getClass))

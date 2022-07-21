@@ -22,6 +22,26 @@ class Dataset protected (
 
   protected val LIMIT = 5
 
+  protected def booleanData(data: Vector[Vector[Any]]): Dataset =
+    new Dataset(
+      columnNameMap,
+      columnNames,
+      data,
+      Vector.fill(cols)(BoolType),
+    )
+
+  protected def transform(f: Any => Any): Vector[Vector[Any]] = dataArray map (r => r.head +: (r.tail map f))
+
+  protected def predicate[T](p: T => Boolean): Dataset = booleanData(transform(p.asInstanceOf[Any => Any]))
+
+  def >(a: Double): Dataset = predicate[Double](_ > a)
+
+  def >=(a: Double): Dataset = predicate[Double](_ >= a)
+
+  def <(a: Double): Dataset = predicate[Double](_ < a)
+
+  def <=(a: Double): Dataset = predicate[Double](_ <= a)
+
   def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
 
   def max(cidx: Int): Double = columnNonNullNumericalIterator(cidx).max
