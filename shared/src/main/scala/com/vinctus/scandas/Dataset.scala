@@ -30,7 +30,8 @@ class Dataset protected (
       Vector.fill(cols)(BoolType),
     )
 
-  protected def transform(f: Any => Any): Vector[Vector[Any]] = dataArray map (r => r.head +: (r.tail map f))
+  protected def transform[A, B](f: A => B): Vector[Vector[Any]] =
+    dataArray map (r => r.head +: (r.tail map f.asInstanceOf[Any => Any]))
 
   protected def operator[T](ds: Dataset, f: (T, T) => T): Vector[Vector[Any]] =
     require(shape == ds.shape, "the datasets don't have the same shape")
@@ -39,7 +40,7 @@ class Dataset protected (
 
     dataArray zip ds.dataArray map { case (r, d) => r.head +: (r.tail zip d.tail map tupled) }
 
-  protected def predicate[T](p: T => Boolean): Dataset = booleanData(transform(p.asInstanceOf[Any => Any]))
+  protected def predicate[T](p: T => Boolean): Dataset = booleanData(transform(p))
 
   def >(a: Double): Dataset = predicate[Double](_ > a)
 
@@ -48,6 +49,10 @@ class Dataset protected (
   def <(a: Double): Dataset = predicate[Double](_ < a)
 
   def <=(a: Double): Dataset = predicate[Double](_ <= a)
+
+  def ==(a: Double): Dataset = predicate[Double](_ == a)
+
+  def !=(a: Double): Dataset = predicate[Double](_ != a)
 
   def &&(ds: Dataset): Dataset = connective(_ && _, ds)
 
