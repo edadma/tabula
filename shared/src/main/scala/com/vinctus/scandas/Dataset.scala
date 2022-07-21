@@ -4,10 +4,11 @@ import io.github.edadma.csv.CSVRead
 import io.github.edadma.matrix.Matrix
 import io.github.edadma.table.{ASCII, TextTable}
 
+import scala.annotation.tailrec
 import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.language.postfixOps
+import scala.language.{dynamics, postfixOps}
 import scala.util.Random
 
 class Dataset protected (
@@ -15,7 +16,8 @@ class Dataset protected (
     val columnNames: Vector[String],
     private val dataArray: Vector[Vector[Any]],
     val columnTypes: Vector[Type],
-):
+) extends collection.immutable.AbstractSeq[Vector[Any]]
+    with Dynamic:
   lazy val columnNamesSet: Set[String] = columnNames.toSet
 
   def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
@@ -32,8 +34,6 @@ class Dataset protected (
     math.sqrt((columnNonNullNumericalIterator(cidx) map (a => (a - m) * (a - m)) sum) / (rows - 1))
 
   def rows: Int = dataArray.length
-
-  def isEmpty: Boolean = rows == 0
 
   def cols: Int = columnNames.length
 
@@ -52,9 +52,9 @@ class Dataset protected (
       1 +: numericalColumnIndices.map(_ + 2) foreach rightAlignment
     }.toString
 
-  def head(n: Int = 10): Dataset = slice(0, n min rows)
+  def head(n: Int = 10): Dataset = rowSlice(0, n min rows)
 
-  def tail(n: Int = 10): Dataset = slice(rows - n max 0, rows)
+  def tail(n: Int = 10): Dataset = rowSlice(rows - n max 0, rows)
 
   def print(): Unit = println(table(0, rows))
 
@@ -108,7 +108,7 @@ class Dataset protected (
 
       ds
 
-  def slice(from: Int, until: Int): Dataset =
+  def rowSlice(from: Int, until: Int): Dataset =
     new Dataset(
       columnNameMap,
       columnNames,
@@ -121,7 +121,7 @@ class Dataset protected (
 
     left ++ right.drop(1)
 
-  def remove(cidx: Int): Dataset =
+  def dropColumn(cidx: Int): Dataset =
     columnIndexCheck(cidx)
 
     new Dataset(
@@ -130,6 +130,27 @@ class Dataset protected (
       dataArray map (r => removeElement(cidx + 1, r)),
       removeElement(cidx, columnTypes),
     )
+
+  def drop(cnames: String*): Dataset =
+    cnames foreach columnNameCheck
+
+    @tailrec
+    def drop(cnames: List[String], ds: Dataset): Dataset =
+      cnames match
+        case Nil => ds
+        case h :: t =>
+          val cidx = columnNameMap(h)
+          val ds =
+            new Dataset(
+              columnNameMap.removed(h),
+              removeElement(cidx, columnNames),
+              dataArray map (r => removeElement(cidx + 1, r)),
+              removeElement(cidx, columnTypes),
+            )
+
+          drop(t, ds)
+
+    drop(cnames.toList, this)
 
   protected def insertElement[T](idx: Int, elems: Vector[T], vec: Vector[T]): Vector[T] =
     val (left, right) = vec.splitAt(idx)
@@ -172,14 +193,29 @@ class Dataset protected (
 
   def row(ridx: Int): IndexedSeq[Any] = dataArray(ridx).tail
 
-  def apply(cname: String): IndexedSeq[Any] = apply(columnNameMap(cname))
+  protected def columnNameCheck(cname: String): Unit =
+    require(columnNameMap contains cname, s"column name '$cname' not found")
+
+  def apply(cname: String): Dataset =
+    columnNameCheck(cname)
+
+    val cidx = columnNameMap(cname)
+
+    new Dataset(
+      Map(cname -> 0),
+      Vector(cname),
+      dataArray map (r => Vector(r.head, r(cidx + 1))),
+      Vector(columnTypes(cidx)),
+    )
 
   protected def columnIndexCheck(cidx: Int): Unit =
     require(0 <= cidx && cidx < cols, "column index ranges from 0 to number of columns - 1")
 
-  def apply(cidx: Int): IndexedSeq[Any] =
-    columnIndexCheck(cidx)
-    dataArray map (_(cidx + 1)) to ArraySeq
+  def apply(idx: Int): Vector[Any] = dataArray(idx).tail
+
+  def length: Int = rows
+
+  def selectDynamic(cname: String): Dataset = apply(cname)
 
   def columnNonNullIterator[T](cidx: Int): Iterator[T] =
     columnIndexCheck(cidx)
@@ -189,7 +225,7 @@ class Dataset protected (
     columnIndexCheck(cidx)
     columnNonNullIterator[Number](cidx) map (_.doubleValue)
 
-  def iterator: Iterator[IndexedSeq[Any]] = dataArray.iterator map (_ drop 1)
+  override def iterator: Iterator[Vector[Any]] = dataArray.iterator map (_ drop 1)
 
   def index(indices: Seq[Any]): Dataset =
     require(indices.length == rows, "sequence of indices should be the same length as the number of rows")
