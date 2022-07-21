@@ -32,6 +32,13 @@ class Dataset protected (
 
   protected def transform(f: Any => Any): Vector[Vector[Any]] = dataArray map (r => r.head +: (r.tail map f))
 
+  protected def operator[T](ds: Dataset, f: (T, T) => T): Vector[Vector[Any]] =
+    require(shape == ds.shape, "the datasets don't have the same shape")
+
+    val tupled = f.tupled.asInstanceOf[((Any, Any)) => Any]
+
+    dataArray zip ds.dataArray map { case (r, d) => r.head +: (r.tail zip d.tail map tupled) }
+
   protected def predicate[T](p: T => Boolean): Dataset = booleanData(transform(p.asInstanceOf[Any => Any]))
 
   def >(a: Double): Dataset = predicate[Double](_ > a)
@@ -41,6 +48,14 @@ class Dataset protected (
   def <(a: Double): Dataset = predicate[Double](_ < a)
 
   def <=(a: Double): Dataset = predicate[Double](_ <= a)
+
+  def &&(ds: Dataset): Dataset = connective(_ && _, ds)
+
+  def ||(ds: Dataset): Dataset = connective(_ || _, ds)
+
+  protected def connective(op: (Boolean, Boolean) => Boolean, ds: Dataset): Dataset = booleanData(
+    operator[Boolean](ds, op),
+  )
 
   def min(cidx: Int): Double = columnNonNullNumericalIterator(cidx).min
 

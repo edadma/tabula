@@ -23,7 +23,7 @@ object Main extends App:
 //
 //  ds.info()
   ds.describe.print()
-  println(ds(ds.col1 > 3))
+  println((ds.col1 > 3) || (ds.col1 > 21))
 
 //  ds.print()
 //  println(ds.dataArray.flatten map (a => if a == null then "<null>" else a.getClass))
