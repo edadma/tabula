@@ -40,6 +40,7 @@ lazy val scandas = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .jvmSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
     libraryDependencies += "com.lihaoyi" %%% "pprint" % "0.7.0" % "test",
+    libraryDependencies += "org.postgresql" % "postgresql" % "42.4.0",
   )
   .nativeSettings(
     nativeLinkStubs := true,

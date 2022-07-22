@@ -36,6 +36,8 @@ object Main extends App:
 //
 //  println(ds1.describe)
 
-  val ds = Dataset(Map("col1" -> Seq(3, 4, 5, 6)))
+//  val ds = Dataset(Map("col1" -> Seq(3, 4, 5, 6)))
+//
+//  ds.describe.print()
 
-  ds.describe.print()
+  println(JDBC.query("SELECT * FROM accounts", "localhost", "shuttlecontrol", "shuttlecontrol", "shuttlecontrol", 5433))
