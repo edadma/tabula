@@ -35,8 +35,7 @@ object Main extends App:
     s map (x => (x - mean) / std)
 
   ds.describe.print()
-  println(ds)
-  println(ds(zcode))
+  println(ds(ds(zcode).abs < 3))
 
 //  ds.print()
 //  println(ds.dataArray.flatten map (a => if a == null then "<null>" else a.getClass))

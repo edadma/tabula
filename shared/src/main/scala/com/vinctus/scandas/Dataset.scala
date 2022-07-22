@@ -84,6 +84,14 @@ class Dataset protected (
 
   def /(a: Double): Dataset = operation(_ / a)
 
+  def abs: Dataset = operation(_.abs)
+
+  def ceil: Dataset = operation(_.ceil)
+
+  def floor: Dataset = operation(_.floor)
+
+  def round: Dataset = operation(_.round)
+
   def min: Dataset = applyScalar(Sample.min)
 
   def max: Dataset = applyScalar(Sample.max)
