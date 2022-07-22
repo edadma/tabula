@@ -23,19 +23,19 @@ object Main extends App:
 //
 //  ds.info()
 
-  val ds = Dataset(
-    Map(
-      "col1" -> Seq(1, 15, 2, 2, 2, 3, 1, 1, 2, 2, 2, 3, 1, 1, 2),
-      "col2" -> Seq(1, 2, 12, 2, 2, 3, 1, 1, 2, 2, 2, 3, 1, 1, 2),
-    ),
-  )
+//  val ds = Dataset(
+//    Map(
+//      "col1" -> Seq(1, 15, 2, 2, 2, 3, 1, 1, 2, 2, 2, 3, 1, 1, 2),
+//      "col2" -> Seq(1, 2, 12, 2, 2, 3, 1, 1, 2, 2, 2, 3, 1, 1, 2),
+//    ),
+//  )
+//
+//  ds.describe.print()
+//
+//  val ds1 = ds((ds.zcode.abs < 3).all)
+//
+//  println(ds1.describe)
+
+  val ds = Dataset(Map("col1" -> Seq(3, 4, 5, 6)))
 
   ds.describe.print()
-
-  val ds1 = ds((ds.zcode.abs < 3).all)
-
-  println(ds1.describe)
-
-//  val ds = Dataset(Map("col1" -> Seq(3, 4), "col2" -> Seq(5, 6)))
-//
-//  println(ds((ds > 3).all))

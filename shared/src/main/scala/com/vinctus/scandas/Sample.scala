@@ -1,14 +1,17 @@
 package com.vinctus.scandas
 
+import math._
 import scala.language.postfixOps
 
 object Sample:
-  def std(s: Seq[Double]): Double =
+  def std(s: Seq[Double]): Double = sqrt(s2(s)) // todo: different ways of calculating standard deviation
+
+  def sem(s: Seq[Double]): Double = std(s) / sqrt(s.length)
+
+  def s2(s: Seq[Double]): Double =
     val m = mean(s)
 
-    math.sqrt(
-      (s map (a => (a - m) * (a - m)) sum) / (count(s) /*- 1*/ ),
-    ) // todo: different ways of calculating standard deviation
+    (s map (a => (a - m) * (a - m)) sum) / (count(s) - 1)
 
   def mean(s: Seq[Double]): Double = s.sum / count(s)
 

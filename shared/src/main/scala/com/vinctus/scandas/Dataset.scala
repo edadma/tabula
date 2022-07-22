@@ -115,6 +115,10 @@ class Dataset protected (
 
   def std: Dataset = applyScalar(Sample.std)
 
+  def sem: Dataset = applyScalar(Sample.sem)
+
+  def s2: Dataset = applyScalar(Sample.s2)
+
   def zcode: Dataset = apply(Sample.zcode)
 
   def rows: Int = dataArray.length
