@@ -4,7 +4,7 @@ import java.sql.{Connection, DriverManager, ResultSet}
 import scala.collection.mutable.ArrayBuffer
 import io.github.edadma.table.TextTable
 
-object JDBC:
+object PG:
   def connect(host: String, database: String, user: String, password: String, port: Int): Connection =
     Class.forName("org.postgresql.Driver")
     DriverManager.getConnection(s"jdbc:postgresql://$host:$port/$database", user, password)

@@ -52,7 +52,7 @@ object Main extends App:
 //      |      and t.confirmed_at is not null""".stripMargin
 
   val ds =
-    JDBC.query(
+    PG.query(
       sql,
       "localhost",
       "shuttlecontrol",
