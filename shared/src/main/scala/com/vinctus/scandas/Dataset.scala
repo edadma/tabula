@@ -80,8 +80,11 @@ class Dataset protected (
 
     dataset(data)
 
+  protected def columnSample(cidx: Int, f: Seq[Double] => Double): Double =
+    f(columnNonNullNumericalIterator(cidx).toSeq)
+
   def applyScalar(f: Seq[Double] => Double): Dataset =
-    val columns = for (c <- 0 until cols) yield f(columnNonNullNumericalIterator(c).toSeq)
+    val columns = for (c <- 0 until cols) yield columnSample(c, f)
     val data = Vector(dataArray.head.head +: columns.toVector)
 
     dataset(data)
@@ -161,36 +164,13 @@ class Dataset protected (
       },
     )
 
-  // https://statisticsbyjim.com/basics/percentiles/
-  def percentile(cidx: Int, percent: Int): Double =
-    columnIndexCheck(cidx)
-    val data = columnNonNullNumericalIterator(cidx).toIndexedSeq.sorted
-
-    if data.isEmpty then Double.NaN
-    else if data.length < 3 then data.head
-    else
-      val p = percent / 100d
-      val rank = p * (data.length + 1)
-      val upperIndex = rank.toInt
-      val lowerIndex = upperIndex - 1
-      val lower = data(lowerIndex)
-
-      if rank.isWhole then lower
-      else (data(upperIndex) - lower) * (rank - rank.toInt) + lower
-
-  def q1(cidx: Int): Double = percentile(cidx, 25)
-
-  def q2(cidx: Int): Double = percentile(cidx, 50)
-
-  def q3(cidx: Int): Double = percentile(cidx, 75)
-
   def describe: Dataset =
-    val fs = Seq(count, mean, std, min, q1, q2, q3, max)
+    val fs = Seq(Sample.count, Sample.mean, Sample.std, Sample.min, Sample.q1, Sample.q2, Sample.q3, Sample.max)
     val cs = numericalColumnIndices
 
     if cs.isEmpty then Dataset(Seq("EMPTY"), Nil) // todo: pandas.describe() when there are no numeric columns
     else
-      val data = fs map (f => cs map f)
+      val data = fs map (f => cs map (c => columnSample(c, f)))
       val ds =
         Dataset(cs map columnNames, data, indices = Seq("count", "mean", "std", "min", "25%", "50%", "75%", "max"))
 
