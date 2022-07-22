@@ -17,3 +17,9 @@ object Sample:
   def min(s: Seq[Double]): Double = s.min
 
   def max(s: Seq[Double]): Double = s.max
+
+  def zcode(s: Seq[Double]): Seq[Double] =
+    val mean = Sample.mean(s)
+    val std = Sample.std(s)
+
+    s map (x => (x - mean) / std)

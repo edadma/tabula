@@ -24,18 +24,15 @@ object Main extends App:
 //  ds.info()
 
   val ds = Dataset(
-    Seq("value"),
-    Seq(1, 15, 2, 2, 2, 3, 1, 1, 2, 2, 2, 3, 1, 1, 2).map(Seq(_)),
+    Map(
+      "col1" -> Seq(1, 15, 2, 2, 2, 3, 1, 1, 2, 2, 2, 3, 1, 1, 2),
+//      "col2" -> Seq(1, 15, 2, 2, 2, 3, 1, 1, 2, 2, 2, 3, 1, 1, 2),
+    ),
   )
 
-  def zcode(s: Seq[Double]): Seq[Double] =
-    val mean = Sample.mean(s)
-    val std = Sample.std(s)
-
-    s map (x => (x - mean) / std)
-
   ds.describe.print()
-  println(ds(ds(zcode).abs < 3))
+//  println(ds((ds.zcode.abs < 3).all))
 
-//  ds.print()
-//  println(ds.dataArray.flatten map (a => if a == null then "<null>" else a.getClass))
+//  val ds = Dataset(Map("col1" -> Seq(3, 4), "col2" -> Seq(5, 6)))
+//
+//  println(ds((ds > 3).all))

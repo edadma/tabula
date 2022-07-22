@@ -22,6 +22,16 @@ class Dataset protected (
 
   protected val LIMIT = 5
 
+  protected def columnData(data: Vector[Any], typ: Type): Dataset =
+    new Dataset(
+      Map("0" -> 0),
+      Vector("0"),
+      data.zipWithIndex map { case (v, i) => Vector(i, v) },
+      Vector(typ),
+    )
+
+  def all: Dataset = columnData(dataArray map (r => r.tail forall (_.asInstanceOf[Boolean])), BoolType)
+
   protected def booleanData(data: Vector[Vector[Any]]): Dataset =
     new Dataset(
       columnNameMap,
@@ -42,17 +52,17 @@ class Dataset protected (
 
   protected def predicate[T](p: T => Boolean): Dataset = booleanData(transform(p))
 
-  def >(a: Double): Dataset = predicate[Double](_ > a)
+  def >(a: Number): Dataset = predicate[Number](_.doubleValue > a.doubleValue)
 
-  def >=(a: Double): Dataset = predicate[Double](_ >= a)
+  def >=(a: Number): Dataset = predicate[Number](_.doubleValue >= a.doubleValue)
 
-  def <(a: Double): Dataset = predicate[Double](_ < a)
+  def <(a: Number): Dataset = predicate[Number](_.doubleValue < a.doubleValue)
 
-  def <=(a: Double): Dataset = predicate[Double](_ <= a)
+  def <=(a: Number): Dataset = predicate[Number](_.doubleValue <= a.doubleValue)
 
-  def ==(a: Double): Dataset = predicate[Double](_ == a)
+  def ==(a: Number): Dataset = predicate[Number](_.doubleValue == a.doubleValue)
 
-  def !=(a: Double): Dataset = predicate[Double](_ != a)
+  def !=(a: Number): Dataset = predicate[Number](_.doubleValue != a.doubleValue)
 
   def &&(ds: Dataset): Dataset = connective(_ && _, ds)
 
@@ -90,7 +100,7 @@ class Dataset protected (
 
   def floor: Dataset = operation(_.floor)
 
-  def round: Dataset = operation(_.round)
+  def round: Dataset = operation(math.rint)
 
   def min: Dataset = applyScalar(Sample.min)
 
@@ -101,6 +111,8 @@ class Dataset protected (
   def count: Dataset = applyScalar(Sample.count)
 
   def std: Dataset = applyScalar(Sample.std)
+
+  def zcode: Dataset = apply(Sample.zcode)
 
   def rows: Int = dataArray.length
 
@@ -330,9 +342,9 @@ object Dataset:
 
   def apply(
       columns: collection.Seq[String],
-      data: Seq[Seq[Any]],
-      types: Seq[Type] = Seq(InferType),
-      indices: Seq[Any] = Nil,
+      data: collection.Seq[collection.Seq[Any]],
+      types: collection.Seq[Type] = Seq(InferType),
+      indices: collection.Seq[Any] = Nil,
   ): Dataset =
     val columnNameMap = columns.zipWithIndex.toMap
     val columnNameArray = Vector from columns
@@ -428,6 +440,14 @@ object Dataset:
       dataArray zip rowIndexArray map { case (r, i) => (i +: r).toVector } toVector,
       columnTypeArray.toVector,
     )
+
+  def apply(m: collection.Map[String, Seq[Any]]): Dataset =
+    require(m.nonEmpty, "map is empty")
+    require(m.values.map(_.length).toSet.size == 1, "all sequences must have the same length")
+
+    val entries = m.toList
+
+    Dataset(entries map (_._1), entries map (_._2) transpose)
 
   def fromString(s: String): Dataset =
     val csv = CSVRead.fromString(s).get
