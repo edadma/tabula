@@ -32,6 +32,8 @@ class Dataset protected (
 
   def all: Dataset = columnData(dataArray map (r => r.tail forall (_.asInstanceOf[Boolean])), BoolType)
 
+  def any: Dataset = columnData(dataArray map (r => r.tail exists (_.asInstanceOf[Boolean])), BoolType)
+
   protected def booleanData(data: Vector[Vector[Any]]): Dataset =
     new Dataset(
       columnNameMap,
@@ -412,7 +414,8 @@ object Dataset:
           else
             for (r <- dataArray.indices)
               tempValues(r) =
-                tempType.convert(tempValues(r), true) getOrElse convertError(tempValues(r), tempType.name, r, c)
+                if tempType == InferType then null
+                else tempType.convert(tempValues(r), true) getOrElse convertError(tempValues(r), tempType.name, r, c)
 
       for (r <- dataArray.indices)
         dataArray(r)(c) = tempValues(r)

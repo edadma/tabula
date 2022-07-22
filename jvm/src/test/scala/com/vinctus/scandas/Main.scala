@@ -40,4 +40,26 @@ object Main extends App:
 //
 //  ds.describe.print()
 
-  println(JDBC.query("SELECT * FROM accounts", "localhost", "shuttlecontrol", "shuttlecontrol", "shuttlecontrol", 5433))
+  val sql = "select t.scheduled_at, t.confirmed_at, t.finished_at, t.predicted_duration from trips t"
+//    """select t.scheduled_at, t.confirmed_at, t.finished_at, t.predicted_duration
+//      |    from trips t
+//      |    join workflows w on w.id = t.workflow_id
+//      |    join stores s on s.id = t.store_id
+//      |    join accounts a on a.id = s.account_id
+//      |    where a.name = 'Honda of Pasadena' and
+//      |          w.name = 'Shuttle Pickup' and
+//      |          t.state = 'COMPLETED' and t.scheduled_at is not null
+//      |      and t.confirmed_at is not null""".stripMargin
+
+  val ds =
+    JDBC.query(
+      sql,
+      "localhost",
+      "shuttlecontrol",
+      "shuttlecontrol",
+      "shuttlecontrol",
+      5433,
+    )
+
+  println(ds)
+  ds.describe.print()

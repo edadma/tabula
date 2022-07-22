@@ -2,6 +2,7 @@ package com.vinctus.scandas
 
 import java.sql.{Connection, DriverManager, ResultSet}
 import scala.collection.mutable.ArrayBuffer
+import io.github.edadma.table.TextTable
 
 object JDBC:
   def connect(host: String, database: String, user: String, password: String, port: Int): Connection =
@@ -12,18 +13,12 @@ object JDBC:
     val metadata = rs.getMetaData
     val cols = metadata.getColumnCount
     val columns = 1 to cols map metadata.getColumnName
-    val data = ArrayBuffer
+    val data = new ArrayBuffer[Seq[Any]]
 
-    while (result.next)
-      rowSeq(
-        for (i <- 1 to cols)
-          yield result.getObject(i) match {
-            case s: String => s""""$s""""
-            case a         => a
-          },
-      )
+    while (rs.next)
+      data += 1 to cols map rs.getObject
 
-    Dataset(columns)
+    Dataset(columns, data)
 
   def query(sql: String, conn: Connection): Dataset =
     val stmt = conn.createStatement
@@ -32,7 +27,7 @@ object JDBC:
     stmt.close()
     ds
 
-  def query(sql: String, host: String, database: String, user: String, password: String, port: Int): ResultSet =
+  def query(sql: String, host: String, database: String, user: String, password: String, port: Int): Dataset =
     val conn = connect(host, database, user, password, port)
     val res = query(sql, conn)
 
