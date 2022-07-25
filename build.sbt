@@ -7,7 +7,7 @@ lazy val scandas = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(
     name := "scandas",
-    version := "0.1.0-pre.1",
+    version := "0.1.0-pre.2",
     scalaVersion := "3.1.3",
     scalacOptions ++=
       Seq(
@@ -27,9 +27,11 @@ lazy val scandas = crossProject(JSPlatform, JVMPlatform, NativePlatform)
 //    libraryDependencies ++= Seq(
 //      "io.github.edadma" %%% "cross-platform" % "0.1.1"
 //    ),
-    resolvers += Resolver.githubPackages("edadma"),
     libraryDependencies ++= Seq(
       "com.github.scopt" %%% "scopt" % "4.1.0",
+    ),
+    resolvers += Resolver.githubPackages("edadma"),
+    libraryDependencies ++= Seq(
       "io.github.edadma" %%% "csv" % "0.1.4",
       "io.github.edadma" %%% "matrix" % "0.1.2",
       "io.github.edadma" %%% "table" % "1.0.3",

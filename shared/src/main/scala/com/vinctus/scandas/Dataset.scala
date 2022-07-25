@@ -113,7 +113,7 @@ class Dataset protected (
 
   def mean: Dataset = applyScalar(Sample.mean)
 
-  def count: Dataset = applyScalar(Sample.count)
+  def columnCount: Dataset = applyScalar(Sample.count)
 
   def std: Dataset = applyScalar(Sample.std)
 
