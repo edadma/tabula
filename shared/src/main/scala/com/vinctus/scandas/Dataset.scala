@@ -18,7 +18,7 @@ class Dataset protected (
     val columnTypes: Vector[Type],
 ) extends collection.immutable.AbstractSeq[Vector[Any]]
     with Dynamic:
-  lazy val columnNamesSet: Set[String] = columnNames.toSet
+  lazy val columnSet: Set[String] = columnNames.toSet
 
   protected val LIMIT = 5
 
@@ -228,7 +228,7 @@ class Dataset protected (
   def insert(cidx: Int, ds: Dataset): Dataset =
     columnIndexCheck(cidx)
 
-    if columnNamesSet.intersect(ds.columnNamesSet).nonEmpty then sys.error("insert: duplicate column name")
+    if columnSet.intersect(ds.columnSet).nonEmpty then sys.error("insert: duplicate column name")
 
     new Dataset(
       columnNameMap map { case (k, v) =>
@@ -449,3 +449,5 @@ object Dataset:
       else (columns, csv)
 
     Dataset(header, data)
+
+// todo: columnCount should be count but conflicts with Seq.count. needed to be able to count number of 'true' values in a column
