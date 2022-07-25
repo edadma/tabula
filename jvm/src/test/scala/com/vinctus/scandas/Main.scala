@@ -40,7 +40,8 @@ object Main extends App:
 //
 //  ds.describe.print()
 
-  val sql = "select t.scheduled_at, t.confirmed_at, t.finished_at, t.predicted_duration from trips t"
+//  val sql = "select t.scheduled_at, t.confirmed_at, t.finished_at, t.predicted_duration from trips t"
+
 //    """select t.scheduled_at, t.confirmed_at, t.finished_at, t.predicted_duration
 //      |    from trips t
 //      |    join workflows w on w.id = t.workflow_id
@@ -51,15 +52,20 @@ object Main extends App:
 //      |          t.state = 'COMPLETED' and t.scheduled_at is not null
 //      |      and t.confirmed_at is not null""".stripMargin
 
-  val ds =
-    PG.query(
-      sql,
-      "localhost",
-      "shuttlecontrol",
-      "shuttlecontrol",
-      "shuttlecontrol",
-      5433,
-    )
+//  val ds =
+//    PG.query(
+//      sql,
+//      "localhost",
+//      "shuttlecontrol",
+//      "shuttlecontrol",
+//      "shuttlecontrol",
+//      5433,
+//    )
+//
+//  println(ds)
+//  ds.describe.print()
+
+  val ds = Dataset.fromJSONString(""" {"a": [3, 4], "b": [5, 6]} """)
 
   println(ds)
   ds.describe.print()

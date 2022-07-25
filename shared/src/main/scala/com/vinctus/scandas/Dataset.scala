@@ -1,6 +1,7 @@
 package com.vinctus.scandas
 
 import io.github.edadma.csv.CSVRead
+import io.github.edadma.json.DefaultJSONReader
 import io.github.edadma.matrix.Matrix
 import io.github.edadma.table.{ASCII, TextTable}
 
@@ -436,13 +437,23 @@ object Dataset:
 
     Dataset(entries map (_._1), entries map (_._2) transpose)
 
-  def fromString(s: String): Dataset =
+  def fromJSONString(s: String): Dataset = Dataset(
+    DefaultJSONReader.fromString(s).asInstanceOf[collection.Map[String, Seq[Any]]],
+  )
+
+  def fromJSONFile(file: String): Dataset = Dataset(
+    DefaultJSONReader.fromFile(file).asInstanceOf[collection.Map[String, Seq[Any]]],
+  )
+
+  def fromCSVString(s: String, columns: Seq[String] = null): Dataset =
     val csv = CSVRead.fromString(s).get
-    val (header, data) = (csv.head, csv drop 1)
+    val (header, data) =
+      if (columns eq null) (csv.head, csv drop 1)
+      else (columns, csv)
 
     Dataset(header, data)
 
-  def fromCSV(file: String, columns: Seq[String] = null): Dataset =
+  def fromCSVFile(file: String, columns: Seq[String] = null): Dataset =
     val csv = CSVRead.fromFile(file).get
     val (header, data) =
       if (columns eq null) (csv.head, csv drop 1)
@@ -451,3 +462,4 @@ object Dataset:
     Dataset(header, data)
 
 // todo: columnCount should be count but conflicts with Seq.count. needed to be able to count number of 'true' values in a column
+// todo: one-hot encoding of categorical columns
