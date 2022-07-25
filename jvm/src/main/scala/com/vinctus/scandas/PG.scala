@@ -28,8 +28,4 @@ object PG:
     ds
 
   def query(sql: String, host: String, database: String, user: String, password: String, port: Int): Dataset =
-    val conn = connect(host, database, user, password, port)
-    val res = query(sql, conn)
-
-    conn.close()
-    res
+    query(sql, connect(host, database, user, password, port))
