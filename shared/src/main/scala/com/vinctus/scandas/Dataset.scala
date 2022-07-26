@@ -79,8 +79,8 @@ class Dataset protected (
 
   def operation(f: Double => Double): Dataset = dataset(transform(f))
 
-  def apply(f: Seq[Double] => Seq[Double]): Dataset =
-    val columns = for (c <- 0 until cols) yield f(columnNonNull(c).asInstanceOf[Seq[Double]])
+  def apply(f: Seq[Any] => Seq[Any]): Dataset =
+    val columns = for (c <- 0 until cols) yield f(columnNonNull(c))
     val data = (for (r <- 0 until rows) yield dataArray(r).head +: columns.map(_(r)).toVector).toVector
 
     dataset(data)
