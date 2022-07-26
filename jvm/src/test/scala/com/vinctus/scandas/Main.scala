@@ -65,7 +65,8 @@ object Main extends App:
 //  println(ds)
 //  ds.describe.print()
 
-  val ds = Dataset.fromJSONString(""" {"a": [true, true], "b": [5, 6]} """)
+  val ds = Dataset.fromJSONString(""" {"a": [true, false], "b": [5, 6.1]} """)
 
-  println(ds.count())
+  println(ds("b") == 6.1)
+  ds.info()
   ds.describe.print()

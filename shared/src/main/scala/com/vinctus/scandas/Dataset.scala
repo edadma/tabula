@@ -63,9 +63,21 @@ class Dataset protected (
 
   def <=(a: Number): Dataset = predicate[Number](_.doubleValue <= a.doubleValue)
 
-  def ==(a: Number): Dataset = predicate[Number](_.doubleValue == a.doubleValue)
+  def ==(a: Long): Dataset = predicate[Number](_.longValue == a)
 
-  def !=(a: Number): Dataset = predicate[Number](_.doubleValue != a.doubleValue)
+  def !=(a: Long): Dataset = predicate[Number](_.longValue != a)
+
+  def ==(a: Double): Dataset = predicate[Double](_.doubleValue == a.doubleValue)
+
+  def !=(a: Double): Dataset = predicate[Double](_.doubleValue != a.doubleValue)
+
+  def ==(a: Boolean): Dataset = predicate[Boolean](_ == a)
+
+  def !=(a: Boolean): Dataset = predicate[Boolean](_ != a)
+
+  def ==(a: String): Dataset = predicate[String](_ == a)
+
+  def !=(a: String): Dataset = predicate[String](_ != a)
 
   def &&(ds: Dataset): Dataset = connective(_ && _, ds)
 
