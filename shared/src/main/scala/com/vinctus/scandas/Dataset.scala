@@ -80,15 +80,14 @@ class Dataset protected (
   def operation(f: Double => Double): Dataset = dataset(transform(f))
 
   def apply(f: Seq[Double] => Seq[Double]): Dataset =
-    val columns = for (c <- 0 until cols) yield f(columnNonNullNumericalIterator(c).toSeq)
+    val columns = for (c <- 0 until cols) yield f(columnNonNull(c).asInstanceOf[Seq[Double]])
     val data = (for (r <- 0 until rows) yield dataArray(r).head +: columns.map(_(r)).toVector).toVector
 
     dataset(data)
 
-  protected def columnSample(cidx: Int, f: Seq[Double] => Double): Double =
-    f(columnNonNullNumericalIterator(cidx).toSeq)
+  protected def columnSample(cidx: Int, f: Seq[Any] => Any): Any = f(columnNonNull(cidx))
 
-  def applyScalar(f: Seq[Double] => Double): Dataset =
+  def applyColumn(f: Seq[Any] => Any): Dataset =
     val columns = for (c <- 0 until cols) yield columnSample(c, f)
     val data = Vector(dataArray.head.head +: columns.toVector)
 
@@ -110,19 +109,19 @@ class Dataset protected (
 
   def round: Dataset = operation(math.rint)
 
-  def min: Dataset = applyScalar(Sample.min)
+  def min: Dataset = applyColumn(Sample.min)
 
-  def max: Dataset = applyScalar(Sample.max)
+  def max: Dataset = applyColumn(Sample.max)
 
-  def mean: Dataset = applyScalar(Sample.mean)
+  def mean: Dataset = applyColumn(Sample.mean)
 
-  def columnCount: Dataset = applyScalar(Sample.count)
+  def count(axis: Axis = Axis.COLUMN): Dataset = applyColumn(Sample.count)
 
-  def std: Dataset = applyScalar(Sample.std)
+  def std: Dataset = applyColumn(Sample.std)
 
-  def sem: Dataset = applyScalar(Sample.sem)
+  def sem: Dataset = applyColumn(Sample.sem)
 
-  def s2: Dataset = applyScalar(Sample.s2)
+  def s2: Dataset = applyColumn(Sample.s2)
 
   def zcode: Dataset = apply(Sample.zcode)
 
@@ -166,7 +165,7 @@ class Dataset protected (
         header("#", "Column", "Non-Null Count", "Datatype")
 
         for (((n, t), i) <- columnNames zip columnTypes zipWithIndex)
-          this.row(i, n, columnNonNullNumericalIterator(i).length, t.name)
+          this.row(i, n, columnNonNull(i).length, t.name)
 
         rightAlignment(1)
         rightAlignment(3)
@@ -304,13 +303,13 @@ class Dataset protected (
 
   def selectDynamic(cname: String): Dataset = apply(cname)
 
-  def columnNonNullIterator[T](cidx: Int): Iterator[T] =
+  def columnNonNull(cidx: Int): Vector[Any] =
     columnIndexCheck(cidx)
-    (dataArray.iterator map (_(cidx + 1)) filter (_ != null)).asInstanceOf[Iterator[T]]
-
-  def columnNonNullNumericalIterator(cidx: Int): Iterator[Double] =
-    columnIndexCheck(cidx)
-    columnNonNullIterator[Number](cidx) map (_.doubleValue)
+    dataArray flatMap (r =>
+      r(cidx + 1) match
+        case null => Nil
+        case c    => List(c)
+    )
 
   override def iterator: Iterator[Vector[Any]] = dataArray.iterator map (_ drop 1)
 

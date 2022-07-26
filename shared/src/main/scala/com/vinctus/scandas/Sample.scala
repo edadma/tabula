@@ -4,32 +4,37 @@ import math._
 import scala.language.postfixOps
 
 object Sample:
-  def std(s: Seq[Double]): Double = sqrt(s2(s)) // todo: different ways of calculating standard deviation
+  def std(s: Seq[Any]): Double = sqrt(
+    s2(s),
+  ) // todo: different ways of calculating standard deviation
 
-  def sem(s: Seq[Double]): Double = std(s) / sqrt(s.length)
+  def sem(s: Seq[Any]): Double = std(s) / sqrt(s.length)
 
-  def s2(s: Seq[Double]): Double =
-    val m = mean(s)
+  def s2(s: Seq[Any]): Double =
+    val n = numerical(s)
+    val m = mean(n)
 
-    (s map (a => (a - m) * (a - m)) sum) / (count(s) - 1)
+    (n map (a => (a - m) * (a - m)) sum) / (count(n) - 1)
 
-  def mean(s: Seq[Double]): Double = s.sum / count(s)
+  def numerical(s: Seq[Any]): Seq[Double] = s map (_.asInstanceOf[Number].doubleValue)
 
-  def count(s: Seq[Double]): Double = s.length
+  def mean(s: Seq[Any]): Double = numerical(s).sum / count(s)
 
-  def min(s: Seq[Double]): Double = s.min
+  def count(s: Seq[Any]): Double = s.length
 
-  def max(s: Seq[Double]): Double = s.max
+  def min(s: Seq[Any]): Double = numerical(s).min
 
-  def zcode(s: Seq[Double]): Seq[Double] =
+  def max(s: Seq[Any]): Double = numerical(s).max
+
+  def zcode(s: Seq[Any]): Seq[Double] =
     val mean = Sample.mean(s)
     val std = Sample.std(s)
 
-    s map (x => (x - mean) / std)
+    numerical(s) map (x => (x - mean) / std)
 
   // https://statisticsbyjim.com/basics/percentiles/
-  def percentile(s: Seq[Double], percent: Int): Double =
-    val data = s.sorted.toIndexedSeq
+  def percentile(s: Seq[Any], percent: Int): Double =
+    val data = numerical(s).sorted.toIndexedSeq
 
     if data.isEmpty then Double.NaN
     else if data.length < 3 then data.head
@@ -43,8 +48,8 @@ object Sample:
       if rank.isWhole then lower
       else (data(upperIndex) - lower) * (rank - rank.toInt) + lower
 
-  def q1(s: Seq[Double]): Double = percentile(s, 25)
+  def q1(s: Seq[Any]): Double = percentile(s, 25)
 
-  def q2(s: Seq[Double]): Double = percentile(s, 50)
+  def q2(s: Seq[Any]): Double = percentile(s, 50)
 
-  def q3(s: Seq[Double]): Double = percentile(s, 75)
+  def q3(s: Seq[Any]): Double = percentile(s, 75)
