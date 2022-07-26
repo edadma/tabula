@@ -5,6 +5,7 @@ import io.github.edadma.json.DefaultJSONReader
 import io.github.edadma.matrix.Matrix
 import io.github.edadma.table.{ASCII, TextTable}
 
+import java.time.Instant
 import scala.annotation.tailrec
 import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
@@ -78,6 +79,10 @@ class Dataset protected (
   def ==(a: String): Dataset = predicate[String](_ == a)
 
   def !=(a: String): Dataset = predicate[String](_ != a)
+
+  def ==(a: Instant): Dataset = predicate[Instant](_ == a)
+
+  def !=(a: Instant): Dataset = predicate[Instant](_ != a)
 
   def &&(ds: Dataset): Dataset = connective(_ && _, ds)
 
