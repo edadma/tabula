@@ -261,6 +261,22 @@ class Dataset protected (
       (columnTypes take cidx) ++ ds.columnTypes ++ (columnTypes drop cidx),
     )
 
+  def iloc(index: Int): Dataset = iloc(Vector(index))
+
+  def iloc(indices: collection.Seq[Int]): Dataset = dataset(indices.toVector map dataArray)
+
+  def loc(index: Any): Dataset = loc(Vector(index))
+
+  def loc(indices: collection.Seq[Any]): Dataset =
+    val buf = new ArrayBuffer[Vector[Any]]
+
+    for (i <- indices)
+      dataArray find (_.head == i) match
+        case None    => sys.error(s"index label '$i' not found")
+        case Some(r) => buf += r
+
+    dataset(buf.toVector)
+
   def sample(n: Int): Dataset =
     require(n >= 0, "number of samples must be non-negative")
 
@@ -269,7 +285,7 @@ class Dataset protected (
 
     while indicesSet.size < count do indicesSet += Random.nextInt(rows)
 
-    dataset(indicesSet.toVector.iterator map dataArray toVector)
+    iloc(indicesSet.toVector)
 
   def shape: (Int, Int) = (rows, cols)
 
