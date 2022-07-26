@@ -67,7 +67,7 @@ object Main extends App:
 
   val ds = Dataset.fromJSONString(""" {"a": [true, false, false], "b": [5, 6, 9]} """)
 
-  println(ds.a.counts().loc(false).head.head)
+  println(ds.countsNormalize("a")(true))
   println(ds)
   ds.info()
   ds.describe.print()

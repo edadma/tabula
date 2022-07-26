@@ -106,7 +106,7 @@ class Dataset protected (
 
   def applyColumn(f: Seq[Any] => Any): Dataset =
     val columns = for (c <- 0 until cols) yield columnSample(c, f)
-    val data = Vector(dataArray.head.head +: columns.toVector)
+    val data = Vector(0 +: columns.toVector)
 
     dataset(data)
 
@@ -182,7 +182,7 @@ class Dataset protected (
         header("#", "Column", "Non-Null Count", "Datatype")
 
         for (((n, t), i) <- columnNames zip columnTypes zipWithIndex)
-          this.row(i, n, columnNonNull(i).length, t.name)
+          this.row(i, n, columnNonNullCount(i), t.name)
 
         rightAlignment(1)
         rightAlignment(3)
@@ -277,18 +277,24 @@ class Dataset protected (
 
     dataset(buf.toVector)
 
-  def counts(normalize: Boolean = false): Dataset =
-    require(cols == 1, "counts() only works for single column datasets")
+  def counts(cname: String): Map[Any, Int] =
+    columnNameCheck(cname)
+    (columnNonNull(columnNameMap(cname)) groupBy identity).view.mapValues(_.length).toMap
+//    val (indices, data) = groups.toVector.unzip
+//
+//    Dataset(
+//      Seq("counts"),
+//      data map (c => Vector(if normalize then c.toDouble / rows else c)),
+//      Seq(if normalize then FloatType else IntType),
+//      indices,
+//    )
 
-    val groups = (dataArray map (_.last) groupBy identity).view.mapValues(_.length)
-    val (indices, data) = groups.toVector.unzip
+  def countsNormalize(cname: String): Map[Any, Double] =
+    columnNameCheck(cname)
 
-    Dataset(
-      Seq("counts"),
-      data map (c => Vector(if normalize then c.toDouble / rows else c)),
-      Seq(if normalize then FloatType else IntType),
-      indices,
-    )
+    val rowCount = columnNonNullCount(columnNameMap(cname))
+
+    counts(cname).view.mapValues(c => c.toDouble / rowCount).toMap
 
   def sample(n: Int): Dataset =
     require(n >= 0, "number of samples must be non-negative")
@@ -356,6 +362,10 @@ class Dataset protected (
         case null => Nil
         case c    => List(c)
     )
+
+  def columnNonNullCount(cidx: Int): Int =
+    columnIndexCheck(cidx)
+    dataArray count (_(cidx + 1) != null)
 
   override def iterator: Iterator[Vector[Any]] = dataArray.iterator map (_ drop 1)
 
