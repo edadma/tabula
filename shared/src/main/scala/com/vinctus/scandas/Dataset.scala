@@ -71,6 +71,8 @@ class Dataset protected (
 
   def ||(ds: Dataset): Dataset = connective(_ || _, ds)
 
+  def unary_! : Dataset = predicate[Boolean](!_)
+
   protected def connective(op: (Boolean, Boolean) => Boolean, ds: Dataset): Dataset = booleanData(
     operator[Boolean](ds, op),
   )
