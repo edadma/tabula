@@ -277,11 +277,18 @@ class Dataset protected (
 
     dataset(buf.toVector)
 
-  def counts(normalize: Boolean = false) =
-    val data = dataArray map (_ drop 1)
-    val grouped = data.groupBy(identity).view.mapValues(_.length)
+  def counts(normalize: Boolean = false): Dataset =
+    require(cols == 1, "counts() only works for single column datasets")
 
-    dataset()
+    val groups = (dataArray map (_.last) groupBy identity).view.mapValues(_.length)
+    val (indices, data) = groups.toVector.unzip
+
+    Dataset(
+      Seq("counts"),
+      data map (c => Vector(if normalize then c.toDouble / rows else c)),
+      Seq(if normalize then FloatType else IntType),
+      indices,
+    )
 
   def sample(n: Int): Dataset =
     require(n >= 0, "number of samples must be non-negative")
