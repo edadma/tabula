@@ -65,9 +65,16 @@ object Main extends App:
 //  println(ds)
 //  ds.describe.print()
 
-  val ds = Dataset.fromJSONString(""" {"a": [true, false, false], "b": [5, 6, 9]} """)
+//  val ds = Dataset.fromTabString(
+//    "cats",
+//    """
+//      |cats
+//      |pointy: boolean  round: boolean  whiskers: boolean   cat: boolean
+//      |true             true            true                true
+//      |""".stripMargin,
+//  )
 
-  println(ds.countsNormalize("a")(true))
+  val ds = Dataset.fromTabFile("cats", "cats.tab")
+
   println(ds)
   ds.info()
-  ds.describe.print()

@@ -1,6 +1,7 @@
 package com.vinctus.scandas
 
 import io.github.edadma.csv.CSVRead
+import io.github.edadma.importer.{Table, Importer}
 import io.github.edadma.json.DefaultJSONReader
 import io.github.edadma.matrix.Matrix
 import io.github.edadma.table.{ASCII, TextTable}
@@ -501,6 +502,16 @@ object Dataset:
   def fromJSONFile(file: String): Dataset = Dataset(
     DefaultJSONReader.fromFile(file).asInstanceOf[collection.Map[String, Seq[Any]]],
   )
+
+  def fromTabString(table: String, s: String): Dataset =
+    Importer.importFromString(s, doubleSpaces = true).tables find (_.name == table) match
+      case None                         => sys.error(s"table '$table' not found")
+      case Some(Table(_, header, data)) => Dataset(header map (_.name), data)
+
+  def fromTabFile(table: String, file: String): Dataset =
+    Importer.importFromFile(file, doubleSpaces = true).tables find (_.name == table) match
+      case None                         => sys.error(s"table '$table' not found")
+      case Some(Table(_, header, data)) => Dataset(header map (_.name), data)
 
   def fromCSVString(s: String, columns: Seq[String] = null): Dataset =
     val csv = CSVRead.fromString(s).get
