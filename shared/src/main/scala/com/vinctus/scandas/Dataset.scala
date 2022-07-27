@@ -280,7 +280,7 @@ class Dataset protected (
 
   def counts(cname: String): Map[Any, Int] =
     columnNameCheck(cname)
-    (columnNonNull(columnNameMap(cname)) groupBy identity).view.mapValues(_.length).toMap
+    (columnNonNull(columnNameMap(cname)) groupBy identity).view.mapValues(_.length).toMap.withDefaultValue(0)
 //    val (indices, data) = groups.toVector.unzip
 //
 //    Dataset(
@@ -295,7 +295,7 @@ class Dataset protected (
 
     val rowCount = columnNonNullCount(columnNameMap(cname))
 
-    counts(cname).view.mapValues(c => c.toDouble / rowCount).toMap
+    counts(cname).view.mapValues(c => c.toDouble / rowCount).toMap.withDefaultValue(0)
 
   def sample(n: Int): Dataset =
     require(n >= 0, "number of samples must be non-negative")
