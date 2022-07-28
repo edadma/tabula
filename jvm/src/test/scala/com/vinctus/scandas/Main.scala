@@ -65,16 +65,23 @@ object Main extends App:
 //  println(ds)
 //  ds.describe.print()
 
-//  val ds = Dataset.fromTabString(
-//    "cats",
-//    """
-//      |cats
-//      |pointy: boolean  round: boolean  whiskers: boolean   cat: boolean
-//      |true             true            true                true
-//      |""".stripMargin,
-//  )
+  val ds = Dataset.fromTabString(
+    "numbers",
+    """
+      |numbers
+      |n: integer
+      |3
+      |5
+      |3
+      |123
+      |50
+      |2
+      |""".stripMargin,
+  )
 
-  val ds = Dataset.fromTabFile("cats", "cats.tab")
+  println(ds.sort("n"))
 
-  println(ds)
-  ds.info()
+//  val ds = Dataset.fromTabFile("cats", "cats.tab")
+//
+//  println(ds)
+//  ds.info()

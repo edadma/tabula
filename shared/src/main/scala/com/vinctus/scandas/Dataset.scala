@@ -297,6 +297,15 @@ class Dataset protected (
 
     counts(cname).view.mapValues(c => c.toDouble / rowCount).toMap.withDefaultValue(0)
 
+  def sort(cname: String): Dataset =
+    columnNameCheck(cname)
+
+    val col = columnNameMap(cname)
+
+    columnTypes(col) match
+      case IntType   => dataset(dataArray.sortBy(_(col + 1).asInstanceOf[Long]))
+      case FloatType => dataset(dataArray.sortBy(_(col + 1).asInstanceOf[Double]))
+
   def sample(n: Int): Dataset =
     require(n >= 0, "number of samples must be non-negative")
 
