@@ -295,7 +295,7 @@ class Dataset protected (
 
     val rowCount = columnNonNullCount(columnNameMap(cname))
 
-    counts(cname).view.mapValues(c => c.toDouble / rowCount).toMap.withDefaultValue(0)
+    counts(cname).view.mapValues(c => if rowCount == 0 then 0 else c.toDouble / rowCount).toMap.withDefaultValue(0)
 
   def sort(cname: String): Dataset =
     columnNameCheck(cname)
