@@ -79,7 +79,7 @@ object Main extends App:
       |""".stripMargin,
   )
 
-  println(ds.sort("n"))
+  println(ds.values("n"))
 
 //  val ds = Dataset.fromTabFile("cats", "cats.tab")
 //

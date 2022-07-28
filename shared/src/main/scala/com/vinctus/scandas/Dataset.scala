@@ -278,17 +278,18 @@ class Dataset protected (
 
     dataset(buf.toVector)
 
+  def values(cname: String): Seq[Any] =
+    columnNameCheck(cname)
+    columnNonNull(columnNameMap(cname)).distinct.sortWith(
+      (_, _) match
+        case (a: Long, b: Long)     => a < b
+        case (a: Double, b: Double) => a < b
+        case (a: String, b: String) => a < b,
+    )
+
   def counts(cname: String): Map[Any, Int] =
     columnNameCheck(cname)
     (columnNonNull(columnNameMap(cname)) groupBy identity).view.mapValues(_.length).toMap.withDefaultValue(0)
-//    val (indices, data) = groups.toVector.unzip
-//
-//    Dataset(
-//      Seq("counts"),
-//      data map (c => Vector(if normalize then c.toDouble / rows else c)),
-//      Seq(if normalize then FloatType else IntType),
-//      indices,
-//    )
 
   def countsNormalize(cname: String): Map[Any, Double] =
     columnNameCheck(cname)
@@ -365,13 +366,9 @@ class Dataset protected (
 
   def selectDynamic(cname: String): Dataset = apply(cname)
 
-  def columnNonNull(cidx: Int): Vector[Any] =
+  def columnNonNull(cidx: Int): ArraySeq[Any] =
     columnIndexCheck(cidx)
-    dataArray flatMap (r =>
-      r(cidx + 1) match
-        case null => Nil
-        case c    => List(c)
-    )
+    dataArray.iterator filter (_(cidx + 1) != null) map (_(cidx + 1)) to ArraySeq
 
   def columnNonNullCount(cidx: Int): Int =
     columnIndexCheck(cidx)
