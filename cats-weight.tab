@@ -1,0 +1,12 @@
+cats
+ pointy: boolean  round: boolean  whiskers: boolean  weight: float  cat: boolean 
+ true             true            true               7.2            true         
+ false            false           true               8.8            true         
+ false            true            false              15             false        
+ true             false           true               9.2            false        
+ true             true            true               8.4            true         
+ true             true            false              7.6            true         
+ false            false           false              11             false        
+ true             true            false              10.2           true         
+ false            true            false              18             false        
+ false            true            false              20             false        
