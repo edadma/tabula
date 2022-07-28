@@ -33,13 +33,13 @@ object Sample:
     numerical(s) map (x => (x - mean) / std)
 
   // https://statisticsbyjim.com/basics/percentiles/
-  def percentile(s: Seq[Any], percent: Int): Double =
+  def percentile(s: Seq[Any], percent: Double): Double =
     val data = numerical(s).sorted.toIndexedSeq
 
     if data.isEmpty then Double.NaN
     else if data.length < 3 then data.head
     else
-      val p = percent / 100d
+      val p = percent / 100
       val rank = p * (data.length + 1)
       val upperIndex = rank.toInt
       val lowerIndex = upperIndex - 1
