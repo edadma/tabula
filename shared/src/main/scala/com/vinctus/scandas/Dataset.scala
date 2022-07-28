@@ -15,9 +15,9 @@ import scala.language.{dynamics, postfixOps}
 import scala.util.Random
 
 class Dataset protected (
-    private val columnNameMap: Map[String, Int],
+    val columnNameMap: Map[String, Int],
     val columnNames: Vector[String],
-    private val dataArray: Vector[Vector[Any]],
+    val dataArray: Vector[Vector[Any]],
     val columnTypes: Vector[Type],
 ) extends collection.immutable.AbstractSeq[Vector[Any]]
     with Dynamic:
