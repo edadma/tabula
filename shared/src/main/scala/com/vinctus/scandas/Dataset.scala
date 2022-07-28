@@ -278,14 +278,17 @@ class Dataset protected (
 
     dataset(buf.toVector)
 
-  def values(cname: String): Seq[Any] =
+  def valuesLong(cname: String): Seq[Long] =
     columnNameCheck(cname)
-    columnNonNull(columnNameMap(cname)).distinct.sortWith(
-      (_, _) match
-        case (a: Long, b: Long)     => a < b
-        case (a: Double, b: Double) => a < b
-        case (a: String, b: String) => a < b,
-    )
+    columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[Long]].sorted
+
+  def valuesDouble(cname: String): Seq[Double] =
+    columnNameCheck(cname)
+    columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[Double]].sorted
+
+  def valuesString(cname: String): Seq[String] =
+    columnNameCheck(cname)
+    columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[String]].sorted
 
   def counts(cname: String): Map[Any, Int] =
     columnNameCheck(cname)
