@@ -538,5 +538,8 @@ object Dataset:
 
     Dataset(header, data)
 
+enum Axis:
+  case INDEX, COLUMN
+
 // todo: columnCount should be count but conflicts with Seq.count. needed to be able to count number of 'true' values in a column
 // todo: one-hot encoding of categorical columns
