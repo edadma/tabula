@@ -11,10 +11,14 @@ object Sample:
   def sem(s: Seq[Any]): Double = std(s) / sqrt(s.length)
 
   def s2(s: Seq[Any]): Double =
-    val n = numerical(s)
-    val m = mean(n)
+    require(s.nonEmpty, "can't compute variance of an empty list")
 
-    (n map (a => (a - m) * (a - m)) sum) / (count(n) - 1)
+    if s.lengthCompare(1) == 0 then 0
+    else
+      val n = numerical(s)
+      val m = mean(n)
+
+      (n map (a => (a - m) * (a - m)) sum) / (count(n) - 1)
 
   def numerical(s: Seq[Any]): Seq[Double] = s map (_.asInstanceOf[Number].doubleValue)
 
