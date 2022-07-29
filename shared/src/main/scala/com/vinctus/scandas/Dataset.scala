@@ -338,7 +338,9 @@ class Dataset protected (
 
   def shape: (Int, Int) = (rows, cols)
 
-  def row(ridx: Int): IndexedSeq[Any] = dataArray(ridx).tail
+  def row(ridx: Int): Map[String, Any] =
+    columnIndexCheck(ridx)
+    columnNames zip dataArray(ridx).tail toMap
 
   protected def columnNameCheck(cname: String): Unit =
     require(columnNameMap contains cname, s"column name '$cname' not found")
