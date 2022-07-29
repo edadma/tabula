@@ -33,6 +33,10 @@ class Dataset protected (
       Vector(typ),
     )
 
+  def columnType(cname: String): Type =
+    columnNameCheck(cname)
+    columnTypes(columnNameMap(cname))
+
   def all: Dataset = columnData(dataArray map (r => r.tail forall (_.asInstanceOf[Boolean])), BoolType)
 
   def any: Dataset = columnData(dataArray map (r => r.tail exists (_.asInstanceOf[Boolean])), BoolType)
