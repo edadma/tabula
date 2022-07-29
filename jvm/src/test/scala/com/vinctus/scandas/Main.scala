@@ -60,7 +60,17 @@ package com.vinctus.scandas
 //  println(ds)
 //  ds.describe.print()
 
-  val ds = Dataset.fromTabFile("cats", "cats-weight.tab")
+//  val ds = Dataset.fromTabFile("cats", "cats-weight.tab")
+//
+//  println(ds)
+//  ds.info()
+
+  val ds = Dataset.fromCSVString("""
+      |time
+      |2018-08-22T19:10:53.095-04
+      |2018-08-22T19:10:53.094Z
+      |2018-08-22T19:10:53.094Z
+      |""".trim.stripMargin)
 
   println(ds)
   ds.info()

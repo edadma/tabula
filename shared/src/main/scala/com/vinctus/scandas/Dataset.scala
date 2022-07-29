@@ -286,15 +286,15 @@ class Dataset protected (
 
     dataset(buf.toVector)
 
-  def valuesLong(cname: String): Seq[Long] =
+  def valuesInt(cname: String): Seq[Long] =
     columnNameCheck(cname)
     columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[Long]].sorted
 
-  def valuesInstant(cname: String): Seq[Instant] =
+  def valuesTimestamp(cname: String): Seq[Instant] =
     columnNameCheck(cname)
     columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[Instant]].sorted
 
-  def valuesDouble(cname: String): Seq[Double] =
+  def valuesFloat(cname: String): Seq[Double] =
     columnNameCheck(cname)
     columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[Double]].sorted
 
@@ -476,6 +476,7 @@ object Dataset:
                 case (IntType, t @ (IntType | FloatType)) => t
                 case (FloatType, FloatType | IntType)     => FloatType
                 case (BoolType, BoolType)                 => BoolType
+                case (TimestampType, TimestampType)       => TimestampType
                 case _                                    => StringType
               if prevTempType != tempType then changed = true
           //        case MixedType => // todo
