@@ -81,6 +81,14 @@ class Dataset protected (
 
   def !=(a: String): Dataset = predicate[String](_ != a)
 
+  def >(a: Instant): Dataset = predicate[Instant](_ isAfter a)
+
+  def >=(a: Instant): Dataset = predicate[Instant](t => !(t isBefore a))
+
+  def <(a: Instant): Dataset = predicate[Instant](_ isBefore a)
+
+  def <=(a: Instant): Dataset = predicate[Instant](t => !(t isAfter a))
+
   def ==(a: Instant): Dataset = predicate[Instant](_ == a)
 
   def !=(a: Instant): Dataset = predicate[Instant](_ != a)
@@ -281,6 +289,10 @@ class Dataset protected (
   def valuesLong(cname: String): Seq[Long] =
     columnNameCheck(cname)
     columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[Long]].sorted
+
+  def valuesInstant(cname: String): Seq[Instant] =
+    columnNameCheck(cname)
+    columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[Instant]].sorted
 
   def valuesDouble(cname: String): Seq[Double] =
     columnNameCheck(cname)
@@ -540,6 +552,3 @@ object Dataset:
 
 enum Axis:
   case INDEX, COLUMN
-
-// todo: columnCount should be count but conflicts with Seq.count. needed to be able to count number of 'true' values in a column
-// todo: one-hot encoding of categorical columns
