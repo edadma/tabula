@@ -65,22 +65,6 @@ object Main extends App:
 //  println(ds)
 //  ds.describe.print()
 
-//  val ds = Dataset.fromTabString(
-//    "numbers",
-//    """
-//      |numbers
-//      |n: integer
-//      |3
-//      |5
-//      |3
-//      |123
-//      |50
-//      |2
-//      |""".stripMargin,
-//  )
-//
-//  println(ds.valuesLong("n"))
-
   val ds = Dataset.fromTabFile("cats", "cats-weight.tab")
 
   println(ds)
