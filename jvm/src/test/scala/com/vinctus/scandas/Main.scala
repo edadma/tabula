@@ -75,6 +75,8 @@ package com.vinctus.scandas
 //  println(ds)
 //  ds.info()
 
-  val ds = Dataset("asdf", Seq(1, 2, 3))
+  val ds1 = Dataset("asdf", Seq(3, 4))
+  val ds2 = Dataset("zxcv", Seq(5, 6))
+  val ds = ds1 append ds2
 
-  println(ds)
+  println(ds("zxcv"))

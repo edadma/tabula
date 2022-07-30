@@ -13,6 +13,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.language.{dynamics, postfixOps}
 import scala.util.Random
+import math._
 
 class Dataset protected (
     val columnNameMap: Map[String, Int],
@@ -258,15 +259,15 @@ class Dataset protected (
     left ++ elems ++ right
 
   def insert(cidx: Int, ds: Dataset): Dataset =
-    columnIndexCheck(cidx)
+    columnIndexCheck(cidx, true)
 
     if columnSet.intersect(ds.columnSet).nonEmpty then sys.error("insert: duplicate column name")
 
     new Dataset(
-      columnNameMap map { case (k, v) =>
-        if v >= cidx then (k, v + ds.cols)
-        else (k, v)
-      },
+      (columnNameMap.view.mapValues(v =>
+        if v >= cidx then v + ds.cols
+        else v,
+      ) ++ ds.columnNameMap.view.mapValues(v => v + cidx)).toMap,
       (columnNames take cidx) ++ ds.columnNames ++ (columnNames drop cidx),
       dataArray zip ds.dataArray map { case (thisr, thatr) =>
         (thisr take cidx + 1) ++ thatr.tail ++ (thisr drop cidx + 1)
@@ -362,8 +363,11 @@ class Dataset protected (
       columnTypes,
     )
 
-  protected def columnIndexCheck(cidx: Int): Unit =
-    require(0 <= cidx && cidx < cols, "column index ranges from 0 to number of columns - 1")
+  protected def columnIndexCheck(cidx: Int, includeAfterEnd: Boolean = false): Unit =
+    require(
+      0 <= cidx && (includeAfterEnd && cidx <= cols || !includeAfterEnd && cidx < cols),
+      "column index ranges from 0 to number of columns - 1",
+    )
 
   protected def rowsCheck(length: Int): Unit = require(length == rows, "number of rows don't match")
 
@@ -410,6 +414,15 @@ class Dataset protected (
   def toArray: ArraySeq[ArraySeq[Any]] = iterator map (_ to ArraySeq) to ArraySeq
 
   override def toString: String = table(0, rows)
+
+  def error(predictions: String, target: String): Double =
+    sqrt((for i <- 0 until rows yield
+      val row = iloc(i)
+      val prediction = row(predictions).head.head.asInstanceOf[Number].doubleValue
+      val diff = prediction - row(target).head.head.asInstanceOf[Number].doubleValue
+
+      diff * diff
+    ).sum / rows)
 
 object Dataset:
 
