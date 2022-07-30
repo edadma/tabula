@@ -274,6 +274,8 @@ class Dataset protected (
       (columnTypes take cidx) ++ ds.columnTypes ++ (columnTypes drop cidx),
     )
 
+  def append(ds: Dataset): Dataset = insert(cols, ds)
+
   def iloc(index: Int): Dataset = iloc(Vector(index))
 
   def iloc(indices: collection.Seq[Int]): Dataset = dataset(indices.toVector map dataArray)
@@ -513,6 +515,8 @@ object Dataset:
       dataArray zip rowIndexArray map { case (r, i) => (i +: r).toVector } toVector,
       columnTypeArray.toVector,
     )
+
+  def apply(cname: String, data: collection.Seq[Any]): Dataset = Dataset(Seq(cname), Seq(data))
 
   def apply(m: collection.Map[String, Seq[Any]]): Dataset =
     require(m.nonEmpty, "map is empty")
