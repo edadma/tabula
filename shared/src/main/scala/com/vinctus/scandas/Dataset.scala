@@ -291,24 +291,19 @@ class Dataset protected (
     dataset(buf.toVector)
 
   def valuesInt(cname: String): Seq[Long] =
-    columnNameCheck(cname)
-    columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[Long]].sorted
+    columnNonNull(cname).distinct.asInstanceOf[Seq[Long]].sorted
 
   def valuesTimestamp(cname: String): Seq[Instant] =
-    columnNameCheck(cname)
-    columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[Instant]].sorted
+    columnNonNull(cname).distinct.asInstanceOf[Seq[Instant]].sorted
 
   def valuesFloat(cname: String): Seq[Double] =
-    columnNameCheck(cname)
-    columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[Double]].sorted
+    columnNonNull(cname).distinct.asInstanceOf[Seq[Double]].sorted
 
   def valuesString(cname: String): Seq[String] =
-    columnNameCheck(cname)
-    columnNonNull(columnNameMap(cname)).distinct.asInstanceOf[Seq[String]].sorted
+    columnNonNull(cname).distinct.asInstanceOf[Seq[String]].sorted
 
   def counts(cname: String): Map[Any, Int] =
-    columnNameCheck(cname)
-    (columnNonNull(columnNameMap(cname)) groupBy identity).view.mapValues(_.length).toMap.withDefaultValue(0)
+    (columnNonNull(cname) groupBy identity).view.mapValues(_.length).toMap.withDefaultValue(0)
 
   def countsNormalize(cname: String): Map[Any, Double] =
     columnNameCheck(cname)
@@ -386,6 +381,10 @@ class Dataset protected (
   def length: Int = rows
 
   def selectDynamic(cname: String): Dataset = apply(cname)
+
+  def columnNonNull(cname: String): ArraySeq[Any] =
+    columnNameCheck(cname)
+    columnNonNull(columnNameMap(cname))
 
   def columnNonNull(cidx: Int): ArraySeq[Any] =
     columnIndexCheck(cidx)
