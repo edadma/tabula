@@ -65,12 +65,16 @@ package com.vinctus.scandas
 //  println(ds)
 //  ds.info()
 
-  val ds = Dataset.fromCSVString("""
-      |time
-      |2018-08-22T19:10:53.095-04
-      |2018-08-22T19:10:53.094Z
-      |2018-08-22T19:10:53.094Z
-      |""".trim.stripMargin)
+//  val ds = Dataset.fromCSVString("""
+//      |time
+//      |2018-08-22T19:10:53.095-04
+//      |2018-08-22T19:10:53.094Z
+//      |2018-08-22T19:10:53.094Z
+//      |""".trim.stripMargin)
+//
+//  println(ds)
+//  ds.info()
+
+  val ds = Dataset("asdf", Seq(1, 2, 3))
 
   println(ds)
-  ds.info()

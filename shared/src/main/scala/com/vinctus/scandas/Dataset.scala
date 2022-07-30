@@ -516,7 +516,7 @@ object Dataset:
       columnTypeArray.toVector,
     )
 
-  def apply(cname: String, data: collection.Seq[Any]): Dataset = Dataset(Seq(cname), Seq(data))
+  def apply(cname: String, data: collection.Seq[Any]): Dataset = Dataset(Seq(cname), data map (Seq(_)))
 
   def apply(m: collection.Map[String, Seq[Any]]): Dataset =
     require(m.nonEmpty, "map is empty")
