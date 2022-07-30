@@ -334,6 +334,24 @@ class Dataset protected (
 
     iloc(indicesSet.toVector)
 
+  def shuffle: Dataset = dataset(Random.shuffle(dataArray))
+
+  def split(splits: Int*): Vector[Dataset] =
+    require(splits.sum == 100, s"splits should sum to 100; got ${splits.sum}")
+
+    var shuffled = Random.shuffle(dataArray)
+    var remaining = 100
+    val sections =
+      for s <- splits yield
+        val len = (s / 100.0 * shuffled.length).round.toInt
+        val (section, rest) = shuffled.splitAt(len)
+
+        shuffled = rest
+        remaining -= section.length
+        dataset(section)
+
+    sections.toVector
+
   def shape: (Int, Int) = (rows, cols)
 
   def row(ridx: Int): Map[String, Any] =
