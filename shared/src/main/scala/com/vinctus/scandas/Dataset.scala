@@ -191,7 +191,8 @@ class Dataset protected (
   def info(): Unit =
     println(s"<class ${getClass.getName}>")
     println(s"$rows rows; $cols columns")
-    println(
+
+    val t =
       new TextTable() {
         header("#", "Column", "Non-Null Count", "Datatype")
 
@@ -200,8 +201,9 @@ class Dataset protected (
 
         rightAlignment(1)
         rightAlignment(3)
-      },
-    )
+      }
+
+    println(t)
 
   def describe: Dataset =
     val fs = Seq(Sample.count, Sample.mean, Sample.std, Sample.min, Sample.q1, Sample.q2, Sample.q3, Sample.max)
