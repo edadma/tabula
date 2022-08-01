@@ -356,7 +356,7 @@ class Dataset protected (
   def shape: (Int, Int) = (rows, cols)
 
   def row(ridx: Int): Map[String, Any] =
-    columnIndexCheck(ridx)
+    rowIndexCheck(ridx)
     columnNames zip dataArray(ridx).tail toMap
 
   protected def columnNameCheck(cname: String): Unit =
@@ -385,7 +385,13 @@ class Dataset protected (
   protected def columnIndexCheck(cidx: Int, includeAfterEnd: Boolean = false): Unit =
     require(
       0 <= cidx && (includeAfterEnd && cidx <= cols || !includeAfterEnd && cidx < cols),
-      "column index ranges from 0 to number of columns - 1",
+      s"column index ranges from 0 to number of columns${if includeAfterEnd then "" else " - 1"}",
+    )
+
+  protected def rowIndexCheck(ridx: Int, includeAfterEnd: Boolean = false): Unit =
+    require(
+      0 <= ridx && (includeAfterEnd && ridx <= rows || !includeAfterEnd && ridx < rows),
+      s"row index ranges from 0 to number of rows${if includeAfterEnd then "" else " - 1"}",
     )
 
   protected def rowsCheck(length: Int): Unit = require(length == rows, "number of rows don't match")
