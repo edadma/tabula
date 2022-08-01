@@ -6,7 +6,7 @@ import io.github.edadma.json.DefaultJSONReader
 import io.github.edadma.matrix.Matrix
 import io.github.edadma.table.{ASCII, TextTable}
 
-import java.time.Instant
+import java.time.{Duration, Instant}
 import scala.annotation.tailrec
 import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
@@ -53,12 +53,19 @@ class Dataset protected (
   protected def transform[A, B](f: A => B): Vector[Vector[Any]] =
     dataArray map (r => r.head +: (r.tail map f.asInstanceOf[Any => Any]))
 
-  protected def operator[T](ds: Dataset, f: (T, T) => T): Vector[Vector[Any]] =
-    require(shape == ds.shape, "the datasets don't have the same shape")
+  protected def operator[A, B](ds: Dataset, f: (A, A) => B): Vector[Vector[Any]] =
+    shapeCheck(ds)
 
     val tupled = f.tupled.asInstanceOf[((Any, Any)) => Any]
 
     dataArray zip ds.dataArray map { case (r, d) => r.head +: (r.tail zip d.tail map tupled) }
+
+  protected def combine[A, B](ds: Dataset, f: (A, A) => B): Vector[Vector[Any]] =
+    shapeCheck(ds)
+
+    val tupled = f.tupled.asInstanceOf[((Any, Any)) => Any]
+
+    dataArray zip ds.dataArray map { case (r, d) => r.tail zip d.tail map tupled }
 
   protected def predicate[T](p: T => Boolean): Dataset = booleanData(transform(p))
 
@@ -105,7 +112,7 @@ class Dataset protected (
   def unary_! : Dataset = predicate[Boolean](!_)
 
   protected def connective(op: (Boolean, Boolean) => Boolean, ds: Dataset): Dataset = booleanData(
-    operator[Boolean](ds, op),
+    operator[Boolean, Boolean](ds, op),
   )
 
   def operation(f: Double => Double): Dataset = dataset(transform(f))
@@ -127,6 +134,22 @@ class Dataset protected (
   def +(a: Double): Dataset = operation(_ + a)
 
   def -(a: Double): Dataset = operation(_ - a)
+
+  protected def ni: Nothing = sys.error("not implemented (yet)")
+
+  protected def shapeCheck(ds: Dataset): Unit =
+    require(shape == ds.shape, s"datasets don't have the same shape: $shape, ${ds.shape}")
+
+  def -(ds: Dataset): Dataset =
+    require(cols == 1, "can only subtract a single column dataset (for now)")
+    shapeCheck(ds)
+
+    (columnTypes.head, ds.columnTypes.head) match
+      case (IntType, IntType)                                                   => ni
+      case (FloatType, IntType) | (IntType, FloatType) | (FloatType, FloatType) => ni
+      case (TimestampType, TimestampType) =>
+        Dataset(combine[Instant, Long](ds, (t1: Instant, t2: Instant) => Duration.between(t1, t2).toMillis))
+      case _ => sys.error(s"type mismatch: ${columnTypes.head}, ${ds.columnTypes.head}")
 
   def *(a: Double): Dataset = operation(_ * a)
 
@@ -278,6 +301,11 @@ class Dataset protected (
     )
 
   def append(ds: Dataset): Dataset = insert(cols, ds)
+
+  def rename(cname: String): Dataset =
+    require(cols == 1, "dataset can only have one column")
+
+    new Dataset(Map(cname -> 0), Vector(cname), dataArray, columnTypes)
 
   def iloc(index: Int): Dataset = iloc(Vector(index))
 
@@ -454,6 +482,9 @@ class Dataset protected (
     ).sum / rows)
 
 object Dataset:
+
+  def apply(data: collection.Seq[collection.Seq[Any]]): Dataset =
+    Dataset(if data.isEmpty then Nil else 1 to data.head.length map (_.toString), data)
 
   def apply(
       columns: collection.Seq[String],

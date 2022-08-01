@@ -75,6 +75,15 @@ package com.vinctus.scandas
 //  println(ds)
 //  ds.info()
 
-  val ds = Dataset("asdf", 3 to 7)
+//  val ds = Dataset("asdf", 3 to 7)
+//
+//  println(ds.split(40, 60))
 
-  println(ds.split(40, 60))
+  import java.time.{Duration, Instant}
+  import java.time.temporal.ChronoUnit._
+
+  val n = Instant.now
+  val ds1 = Dataset("times", Seq(n, n.plus(5, SECONDS)))
+  val ds2 = Dataset("times", Seq(n.plus(6, SECONDS), n.plus(7, SECONDS)))
+
+  println((ds1 - ds2).rename("newColumn"))
