@@ -326,6 +326,8 @@ class Dataset protected (
       case IntType   => dataset(dataArray.sortBy(_(col + 1).asInstanceOf[Long]))
       case FloatType => dataset(dataArray.sortBy(_(col + 1).asInstanceOf[Double]))
 
+  def sampleWithReplacement(n: Int): Dataset = iloc(Vector.fill(n)(Random.nextInt(rows)))
+
   def sample(n: Int): Dataset =
     require(n >= 0, "number of samples must be non-negative")
 
