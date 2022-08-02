@@ -472,14 +472,29 @@ class Dataset protected (
 
   override def toString: String = table(0, rows)
 
-  def error(predictions: String, target: String): Double =
-    sqrt((for i <- 0 until rows yield
+  protected def residualSumOfSquares(predictions: String, target: String): Double =
+    (for i <- 0 until rows yield
       val row = iloc(i)
       val prediction = row(predictions).head.head.asInstanceOf[Number].doubleValue
       val diff = prediction - row(target).head.head.asInstanceOf[Number].doubleValue
 
       diff * diff
-    ).sum / rows)
+    ).sum
+
+  protected def totalSumOfSquares(target: String): Double =
+    val mean = Sample.mean(columnNonNull(target))
+
+    (for i <- 0 until rows yield
+      val row = iloc(i)
+      val diff = mean - row(target).head.head.asInstanceOf[Number].doubleValue
+
+      diff * diff
+    ).sum
+
+  def error(predictions: String, target: String): Double = sqrt(residualSumOfSquares(predictions, target) / rows)
+
+  def r2(predictions: String, target: String): Double =
+    1 - residualSumOfSquares(predictions, target) / totalSumOfSquares(target)
 
 object Dataset:
 
