@@ -89,7 +89,8 @@ import java.time.format.DateTimeFormatter
 //
 //  println((ds1 - ds2).rename("newColumn"))
 
-  val ds = Dataset.fromCSVFile("trips3.csv")
+  val ds = Dataset.fromCSVFile("iris.csv")
+  val ds1 = ds.drop("sepal_length", "sepal_width")
 
-  println(ds)
-  ds.info()
+  println(ds1)
+  ds1.info()

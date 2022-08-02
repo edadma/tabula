@@ -263,18 +263,8 @@ class Dataset protected (
     @tailrec
     def drop(cnames: List[String], ds: Dataset): Dataset =
       cnames match
-        case Nil => ds
-        case h :: t =>
-          val cidx = columnNameMap(h)
-          val ds =
-            new Dataset(
-              columnNameMap.removed(h),
-              removeElement(cidx, columnNames),
-              dataArray map (r => removeElement(cidx + 1, r)),
-              removeElement(cidx, columnTypes),
-            )
-
-          drop(t, ds)
+        case Nil    => ds
+        case h :: t => drop(t, ds.dropColumn(columnNameMap(h)))
 
     drop(cnames.toList, this)
 
