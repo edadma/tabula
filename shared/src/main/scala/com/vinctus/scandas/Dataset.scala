@@ -496,6 +496,9 @@ class Dataset protected (
   def r2(predictions: String, target: String): Double =
     1 - residualSumOfSquares(predictions, target) / totalSumOfSquares(target)
 
+  def adjustedR2(predictions: String, target: String): Double =
+    1 - (1 - r2(predictions, target) * (rows - 1) / (rows - (cols - 2)))
+
 object Dataset:
 
   def apply(data: collection.Seq[collection.Seq[Any]]): Dataset =
