@@ -251,7 +251,7 @@ class Dataset protected (
     columnIndexCheck(cidx)
 
     new Dataset(
-      columnNameMap.removed(columnNames(cidx)),
+      columnNameMap.removed(columnNames(cidx)).view.mapValues(v => if v >= cidx then v - 1 else v).toMap,
       removeElement(cidx, columnNames),
       dataArray map (r => removeElement(cidx + 1, r)),
       removeElement(cidx, columnTypes),
@@ -264,7 +264,7 @@ class Dataset protected (
     def drop(cnames: List[String], ds: Dataset): Dataset =
       cnames match
         case Nil    => ds
-        case h :: t => drop(t, ds.dropColumn(columnNameMap(h)))
+        case h :: t => drop(t, ds.dropColumn(ds.columnNameMap(h)))
 
     drop(cnames.toList, this)
 
