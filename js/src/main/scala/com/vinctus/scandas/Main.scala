@@ -1,10 +1,11 @@
 package com.vinctus.scandas
 
-import java.time.{Duration, Instant}
+import java.time.{Duration, Instant, LocalDateTime, ZoneOffset}
 import java.time.temporal.ChronoUnit._
+import java.time.format.DateTimeFormatter
 
 @main def run(): Unit =
-  val t1 = Instant.now
-  val t2 = Instant.now.plus(5, SECONDS)
+  val ds = Dataset.fromCSVFile("trips3.csv")
 
-  println((t1, t2, Duration.between(t2, t1).toMillis))
+  println(ds)
+  ds.info()

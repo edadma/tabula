@@ -1,5 +1,9 @@
 package com.vinctus.scandas
 
+import java.time.{Duration, Instant, LocalDateTime, ZoneOffset}
+import java.time.temporal.ChronoUnit.*
+import java.time.format.DateTimeFormatter
+
 @main def run(): Unit =
 
 //  val ds = Dataset(
@@ -79,11 +83,13 @@ package com.vinctus.scandas
 //
 //  println(ds.split(40, 60))
 
-  import java.time.{Duration, Instant}
-  import java.time.temporal.ChronoUnit._
+//  val n = Instant.now
+//  val ds1 = Dataset("times", Seq(n, n.plus(5, SECONDS)))
+//  val ds2 = Dataset("times", Seq(n.plus(6, SECONDS), n.plus(7, SECONDS)))
+//
+//  println((ds1 - ds2).rename("newColumn"))
 
-  val n = Instant.now
-  val ds1 = Dataset("times", Seq(n, n.plus(5, SECONDS)))
-  val ds2 = Dataset("times", Seq(n.plus(6, SECONDS), n.plus(7, SECONDS)))
+  val ds = Dataset.fromCSVFile("trips3.csv")
 
-  println((ds1 - ds2).rename("newColumn"))
+  println(ds)
+  ds.info()

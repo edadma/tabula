@@ -1,7 +1,8 @@
 package com.vinctus.scandas
 
+import java.time.format.DateTimeFormatter
 import java.time.{Instant, LocalDateTime, ZoneOffset, ZonedDateTime}
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 object Type:
   def from(dtype: String): Type =
@@ -61,6 +62,8 @@ case object StringType extends Type("string", false):
   def convert(a: Any, coerce: Boolean = false): Option[Any] = Some(if a == null then null else a.toString)
 
 case object TimestampType extends Type("timestamp", false):
+  private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+
   def convert(a: Any, coerce: Boolean = false): Option[Any] =
     a match
       case null       => Some(null)
@@ -71,5 +74,8 @@ case object TimestampType extends Type("timestamp", false):
           case _ =>
             Try(LocalDateTime.parse(s)) match
               case Success(t) => Some(t.toInstant(ZoneOffset.UTC))
-              case _          => None
+              case _ =>
+                Try(LocalDateTime.parse(s, formatter)) match
+                  case Success(t) => Some(t.toInstant(ZoneOffset.UTC))
+                  case _          => None
       case _ => None
