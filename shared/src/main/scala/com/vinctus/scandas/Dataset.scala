@@ -207,9 +207,15 @@ class Dataset protected (
   )
 
   //  def /(a: Double): Dataset = operation(_ / a)
-  //
-  //  def abs: Dataset = operation(_.abs)
-  //
+
+  def abs: Dataset = operation(
+    Some(_.abs),
+    Some(_.abs),
+    None,
+    None,
+    None,
+  )
+
   //  def ceil: Dataset = operation(_.ceil)
   //
   //  def floor: Dataset = operation(_.floor)

@@ -99,6 +99,6 @@ import java.time.format.DateTimeFormatter
   println(trips.describe)
   println(
     trips(
-      trips.duration > trips.predicted_duration * 0.3 && trips.duration < trips.predicted_duration * 2 + 200 && trips.predicted_duration != 0,
+      (trips.zcode.abs < 3).all,
     ).describe,
   )
