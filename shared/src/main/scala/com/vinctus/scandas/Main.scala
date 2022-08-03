@@ -89,10 +89,16 @@ import java.time.format.DateTimeFormatter
 //
 //  println((ds1 - ds2).rename("newColumn"))
 
-  val ds = Dataset.fromCSVFile("trips100.csv")
+  val data = Dataset.fromCSVFile("trips.csv")
 
-  println(ds)
-  val ds1 = (ds append (ds.confirmed_at - ds.finished_at).rename("duration"))
+  val trips = (data append (data.confirmed_at - data.finished_at).rename("duration"))
     .drop("requested_at", "confirmed_at", "finished_at")
 
-  println(ds1)
+  //  println(ds)
+  //  ds.info()
+  println(trips.describe)
+  println(
+    trips(
+      trips.duration > trips.predicted_duration * 0.3 && trips.duration < trips.predicted_duration * 2 + 200 && trips.predicted_duration != 0,
+    ).describe,
+  )

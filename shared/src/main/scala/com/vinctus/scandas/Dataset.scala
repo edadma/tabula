@@ -1,11 +1,12 @@
 package com.vinctus.scandas
 
 import io.github.edadma.csv.CSVRead
-import io.github.edadma.importer.{Table, Importer}
+import io.github.edadma.importer.{Importer, Table}
 import io.github.edadma.json.DefaultJSONReader
 import io.github.edadma.matrix.Matrix
 import io.github.edadma.table.{ASCII, TextTable}
 
+import java.time.temporal.ChronoUnit
 import java.time.{Duration, Instant}
 import scala.annotation.tailrec
 import scala.collection.immutable.ArraySeq
@@ -13,7 +14,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.language.{dynamics, postfixOps}
 import scala.util.Random
-import math._
+import math.*
 
 class Dataset protected (
     val columnNameMap: Map[String, Int],
@@ -50,8 +51,26 @@ class Dataset protected (
       Vector.fill(cols)(BoolType),
     )
 
-  protected def transform[A, B](f: A => B): Vector[Vector[Any]] =
-    dataArray map (r => r.head +: (r.tail map f.asInstanceOf[Any => Any]))
+  protected def transformSameType(
+      fl: Option[Long => Long],
+      fd: Option[Double => Double],
+      fi: Option[Instant => Instant],
+      fs: Option[String => String],
+      fb: Option[Boolean => Boolean],
+  ): Vector[Vector[Any]] =
+    dataArray map (r =>
+      r.head +: (r.tail map {
+        case l: Long if fl.isDefined    => fl.get(l)
+        case d: Double if fd.isDefined  => fd.get(d)
+        case i: Instant if fi.isDefined => fi.get(i)
+        case s: String if fs.isDefined  => fs.get(s)
+        case b: Boolean if fb.isDefined => fb.get(b)
+        case x                          => sys.error(s"type error during transform: $x of class ${x.getClass}")
+      })
+    )
+
+  protected def transformDifferentType(f: Any => Any): Vector[Vector[Any]] =
+    dataArray map (r => r.head +: (r.tail map f))
 
   protected def operator[A, B](ds: Dataset, f: (A, A) => B): Vector[Vector[Any]] =
     shapeCheck(ds)
@@ -67,13 +86,17 @@ class Dataset protected (
 
     dataArray zip ds.dataArray map { case (r, d) => r.tail zip d.tail map tupled }
 
-  protected def predicate[T](p: T => Boolean): Dataset = booleanData(transform(p))
+  protected def predicate[T](p: T => Boolean): Dataset = booleanData(transformDifferentType(p.asInstanceOf[Any => Any]))
 
   def >(a: Number): Dataset = predicate[Number](_.doubleValue > a.doubleValue)
+
+  def >(a: Dataset): Dataset = comparison(_.doubleValue > _.doubleValue, a)
 
   def >=(a: Number): Dataset = predicate[Number](_.doubleValue >= a.doubleValue)
 
   def <(a: Number): Dataset = predicate[Number](_.doubleValue < a.doubleValue)
+
+  def <(a: Dataset): Dataset = comparison(_.doubleValue < _.doubleValue, a)
 
   def <=(a: Number): Dataset = predicate[Number](_.doubleValue <= a.doubleValue)
 
@@ -111,11 +134,21 @@ class Dataset protected (
 
   def unary_! : Dataset = predicate[Boolean](!_)
 
+  protected def comparison(pred: (Number, Number) => Boolean, ds: Dataset): Dataset = booleanData(
+    operator[Number, Boolean](ds, pred),
+  )
+
   protected def connective(op: (Boolean, Boolean) => Boolean, ds: Dataset): Dataset = booleanData(
     operator[Boolean, Boolean](ds, op),
   )
 
-  def operation(f: Double => Double): Dataset = dataset(transform(f))
+  def operation(
+      fl: Option[Long => Long],
+      fd: Option[Double => Double],
+      fi: Option[Instant => Instant],
+      fs: Option[String => String],
+      fb: Option[Boolean => Boolean],
+  ): Dataset = dataset(transformSameType(fl, fd, fi, fs, fb))
 
   def apply(f: Seq[Any] => Seq[Any]): Dataset =
     val columns = for (c <- 0 until cols) yield f(columnNonNull(c))
@@ -131,9 +164,15 @@ class Dataset protected (
 
     dataset(data)
 
-  def +(a: Double): Dataset = operation(_ + a)
+  def +(a: Long): Dataset = operation(
+    Some(_ + a),
+    Some(_ + a),
+    Some(_.plus(a, ChronoUnit.MILLIS)),
+    Some(_.toLongOption map (l => (l + a).toString) getOrElse sys.error("not an integer")),
+    None,
+  )
 
-  def -(a: Double): Dataset = operation(_ - a)
+  //  def -(a: Double): Dataset = operation(_ - a)
 
   protected def ni: Nothing = sys.error("not implemented (yet)")
 
@@ -148,20 +187,34 @@ class Dataset protected (
       case (IntType, IntType)                                                   => ni
       case (FloatType, IntType) | (IntType, FloatType) | (FloatType, FloatType) => ni
       case (TimestampType, TimestampType) =>
-        Dataset(combine[Instant, Long](ds, (t1: Instant, t2: Instant) => Duration.between(t1, t2).toMillis))
+        Dataset(combine[Instant, Long](ds, (t1: Instant, t2: Instant) => Duration.between(t1, t2).toSeconds))
       case _ => sys.error(s"type mismatch: ${columnTypes.head}, ${ds.columnTypes.head}")
 
-  def *(a: Double): Dataset = operation(_ * a)
+  def *(a: Long): Dataset = operation(
+    Some(_ * a),
+    Some(_ * a),
+    None,
+    Some(_.toLongOption map (l => (l * a).toString) getOrElse sys.error("not an integer")),
+    None,
+  )
 
-  def /(a: Double): Dataset = operation(_ / a)
+  def *(a: Double): Dataset = operation(
+    Some(d => (d * a).toLong),
+    Some(_ * a),
+    None,
+    Some(_.toDoubleOption map (l => (l * a).toString) getOrElse sys.error("not a number")),
+    None,
+  )
 
-  def abs: Dataset = operation(_.abs)
-
-  def ceil: Dataset = operation(_.ceil)
-
-  def floor: Dataset = operation(_.floor)
-
-  def round: Dataset = operation(math.rint)
+  //  def /(a: Double): Dataset = operation(_ / a)
+  //
+  //  def abs: Dataset = operation(_.abs)
+  //
+  //  def ceil: Dataset = operation(_.ceil)
+  //
+  //  def floor: Dataset = operation(_.floor)
+  //
+  //  def round: Dataset = operation(math.rint)
 
   def min: Dataset = applyColumn(Sample.min)
 
@@ -488,6 +541,7 @@ class Dataset protected (
 
   def adjustedR2(predictions: String, target: String): Double =
     1 - (1 - r2(predictions, target) * (rows - 1) / (rows - (cols - 2)))
+end Dataset
 
 object Dataset:
 
