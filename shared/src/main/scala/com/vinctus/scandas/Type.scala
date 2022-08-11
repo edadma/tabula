@@ -62,7 +62,7 @@ case object StringType extends Type("string", false):
   def convert(a: Any, coerce: Boolean = false): Option[Any] = Some(if a == null then null else a.toString)
 
 case object TimestampType extends Type("timestamp", false):
-  private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+  private val DATE = """(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d):(\d\d).(\d+)""".r
 
   def convert(a: Any, coerce: Boolean = false): Option[Any] =
     a match
@@ -75,7 +75,11 @@ case object TimestampType extends Type("timestamp", false):
             Try(LocalDateTime.parse(s)) match
               case Success(t) => Some(t.toInstant(ZoneOffset.UTC))
               case _ =>
-                Try(LocalDateTime.parse(s, formatter)) match
-                  case Success(t) => Some(t.toInstant(ZoneOffset.UTC))
-                  case _          => None
+                s match
+                  case DATE(y, m, d, h, mins, s, f) =>
+                    val nanos = (f ++ "0" * (9 - f.length)).toInt
+                    val t = LocalDateTime.of(y.toInt, m.toInt, d.toInt, h.toInt, mins.toInt, s.toInt, nanos)
+
+                    Some(t.toInstant(ZoneOffset.UTC))
+                  case _ => None
       case _ => None

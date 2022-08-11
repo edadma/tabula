@@ -7,7 +7,7 @@ lazy val scandas = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(
     name := "scandas",
-    version := "0.1.0-pre.56",
+    version := "0.1.0-pre.57",
     scalaVersion := "3.1.3",
     scalacOptions ++=
       Seq(
