@@ -1,10 +1,10 @@
-//package com.vinctus.scandas
-//
-//import java.time.{Duration, Instant, LocalDateTime, ZoneOffset}
-//import java.time.temporal.ChronoUnit.*
-//import java.time.format.DateTimeFormatter
-//
-//@main def run(): Unit =
+package com.vinctus.scandas
+
+import java.time.{Duration, Instant, LocalDateTime, ZoneOffset}
+import java.time.temporal.ChronoUnit.*
+import java.time.format.DateTimeFormatter
+
+@main def run(): Unit =
 
 //  val ds = Dataset(
 //    Seq("col1", "col2"),
@@ -88,6 +88,11 @@
 //  val ds2 = Dataset("times", Seq(n.plus(6, SECONDS), n.plus(7, SECONDS)))
 //
 //  println((ds1 - ds2).rename("newColumn"))
+
+  val data = Dataset.fromCSVFile("trips100.csv")
+
+  println(data)
+  data.info()
 
 //  val trips = (data append (data.confirmed_at - data.finished_at).rename("duration"))
 //    .drop("requested_at", "confirmed_at", "finished_at")
