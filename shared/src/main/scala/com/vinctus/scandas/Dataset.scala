@@ -198,6 +198,14 @@ class Dataset protected (
     None,
   )
 
+  def /(a: Long): Dataset = operation(
+    Some(_ / a),
+    Some(_ / a),
+    None,
+    None,
+    None,
+  )
+
   def *(a: Double): Dataset = operation(
     Some(d => (d * a).toLong),
     Some(_ * a),
