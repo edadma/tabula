@@ -187,7 +187,7 @@ class Dataset protected (
       case (IntType, IntType)                                                   => ni
       case (FloatType, IntType) | (IntType, FloatType) | (FloatType, FloatType) => ni
       case (TimestampType, TimestampType) =>
-        Dataset(combine[Instant, Long](ds, (t1: Instant, t2: Instant) => Duration.between(t1, t2).toSeconds))
+        Dataset(combine[Instant, Long](ds, (t1: Instant, t2: Instant) => Duration.between(t1, t2).toMillis))
       case _ => sys.error(s"type mismatch: ${columnTypes.head}, ${ds.columnTypes.head}")
 
   def *(a: Long): Dataset = operation(
