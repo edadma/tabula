@@ -41,9 +41,7 @@ ThisBuild / publishTo := {
 lazy val tabula = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(
-    name         := "tabula",
-    version      := "0.0.2",
-    scalaVersion := "3.1.3",
+    name := "tabula",
     scalacOptions ++=
       Seq(
         "-deprecation",
@@ -71,7 +69,7 @@ lazy val tabula = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   )
   .jvmSettings(
     libraryDependencies += "org.scala-js"  %% "scalajs-stubs" % "1.1.0" % "provided",
-    libraryDependencies += "com.lihaoyi"  %%% "pprint"        % "0.7.3" % "test",
+    libraryDependencies += "com.lihaoyi"  %%% "pprint"        % "0.9.0" % "test",
     libraryDependencies += "org.postgresql" % "postgresql"    % "42.7.7",
   )
   .nativeSettings(
