@@ -55,19 +55,15 @@ lazy val tabula = crossProject(JSPlatform, JVMPlatform, NativePlatform)
         "-language:dynamics",
       ),
     organization := "io.github.vinctustech",
-    githubOwner := "vinctustech",
-    githubRepository := name.value,
-    mainClass := Some(s"${organization.value}.${name.value}.Main"),
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.12" % "test",
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.19" % "test",
 //    libraryDependencies ++= Seq(
 //      "com.github.scopt" %%% "scopt" % "4.1.0",
 //    ),
     resolvers += Resolver.githubPackages("edadma"),
     libraryDependencies ++= Seq(
-      "io.github.edadma" %%% "csv" % "0.1.4",
+//      "io.github.edadma" %%% "csv" % "0.1.4",
       "io.github.edadma" %%% "importer" % "0.0.8",
-      "io.github.edadma" %%% "json" % "0.1.13",
-      "io.github.edadma" %%% "matrix" % "0.1.2",
+      "io.github.edadma" %%% "matrix" % "0.0.2",
       "io.github.edadma" %%% "table" % "1.0.3",
     ),
     publishMavenStyle := true,
@@ -80,8 +76,8 @@ lazy val tabula = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     libraryDependencies += "org.postgresql" % "postgresql" % "42.4.0",
   )
   .nativeSettings(
-    nativeLinkStubs := true,
-    libraryDependencies += "io.github.cquiroz" % "scala-java-time_native0.4_3" % "2.4.0",
+    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
+    libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.6.0",
   )
   .jsSettings(
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
@@ -90,7 +86,7 @@ lazy val tabula = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     Test / scalaJSUseMainModuleInitializer := false,
     Test / scalaJSUseTestModuleInitializer := true,
     scalaJSUseMainModuleInitializer := true,
-    libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.4.0",
+    libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.6.0",
   )
 
 lazy val root = project

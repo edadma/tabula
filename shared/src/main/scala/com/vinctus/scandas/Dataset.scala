@@ -1,8 +1,7 @@
 package com.vinctus.scandas
 
-import io.github.edadma.csv.CSVRead
+//import io.github.edadma.csv.CSVRead
 import io.github.edadma.importer.{Importer, Table}
-import io.github.edadma.json.DefaultJSONReader
 import io.github.edadma.matrix.Matrix
 import io.github.edadma.table.{ASCII, TextTable}
 
@@ -675,14 +674,6 @@ object Dataset:
 
     Dataset(entries map (_._1), entries map (_._2) transpose)
 
-  def fromJSONString(s: String): Dataset = Dataset(
-    DefaultJSONReader.fromString(s).asInstanceOf[collection.Map[String, Seq[Any]]],
-  )
-
-  def fromJSONFile(file: String): Dataset = Dataset(
-    DefaultJSONReader.fromFile(file).asInstanceOf[collection.Map[String, Seq[Any]]],
-  )
-
   def fromTabString(table: String, s: String): Dataset =
     Importer.importFromString(s, doubleSpaces = true).tables find (_.name == table) match
       case None                         => sys.error(s"table '$table' not found")
@@ -693,21 +684,21 @@ object Dataset:
       case None                         => sys.error(s"table '$table' not found")
       case Some(Table(_, header, data)) => Dataset(header map (_.name), data)
 
-  def fromCSVString(s: String, columns: Seq[String] = null): Dataset =
-    val csv = CSVRead.fromString(s).get
-    val (header, data) =
-      if (columns eq null) (csv.head, csv drop 1)
-      else (columns, csv)
-
-    Dataset(header, data)
-
-  def fromCSVFile(file: String, columns: Seq[String] = null): Dataset =
-    val csv = CSVRead.fromFile(file).get
-    val (header, data) =
-      if (columns eq null) (csv.head, csv drop 1)
-      else (columns, csv)
-
-    Dataset(header, data)
+//  def fromCSVString(s: String, columns: Seq[String] = null): Dataset =
+//    val csv = CSVRead.fromString(s).get
+//    val (header, data) =
+//      if (columns eq null) (csv.head, csv drop 1)
+//      else (columns, csv)
+//
+//    Dataset(header, data)
+//
+//  def fromCSVFile(file: String, columns: Seq[String] = null): Dataset =
+//    val csv = CSVRead.fromFile(file).get
+//    val (header, data) =
+//      if (columns eq null) (csv.head, csv drop 1)
+//      else (columns, csv)
+//
+//    Dataset(header, data)
 
 enum Axis:
   case INDEX, COLUMN
