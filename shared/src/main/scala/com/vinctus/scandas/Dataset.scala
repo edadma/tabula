@@ -151,7 +151,7 @@ class Dataset protected (
 
   def apply(f: Seq[Any] => Seq[Any]): Dataset =
     val columns = for (c <- 0 until cols) yield f(columnNonNull(c))
-    val data = (for (r <- 0 until rows) yield dataArray(r).head +: columns.map(_(r)).toVector).toVector
+    val data    = (for (r <- 0 until rows) yield dataArray(r).head +: columns.map(_(r)).toVector).toVector
 
     dataset(data)
 
@@ -159,7 +159,7 @@ class Dataset protected (
 
   def applyColumn(f: Seq[Any] => Any): Dataset =
     val columns = for (c <- 0 until cols) yield columnSample(c, f)
-    val data = Vector(0 +: columns.toVector)
+    val data    = Vector(0 +: columns.toVector)
 
     dataset(data)
 
@@ -185,7 +185,7 @@ class Dataset protected (
     (columnTypes.head, ds.columnTypes.head) match
       case (IntType, IntType)                                                   => ni
       case (FloatType, IntType) | (IntType, FloatType) | (FloatType, FloatType) => ni
-      case (TimestampType, TimestampType) =>
+      case (TimestampType, TimestampType)                                       =>
         Dataset(combine[Instant, Long](ds, (t1: Instant, t2: Instant) => Duration.between(t1, t2).toMillis))
       case _ => sys.error(s"type mismatch: ${columnTypes.head}, ${ds.columnTypes.head}")
 
@@ -301,7 +301,7 @@ class Dataset protected (
     if cs.isEmpty then Dataset(Seq("EMPTY"), Nil) // todo: pandas.describe() when there are no numeric columns
     else
       val data = fs map (f => cs map (c => columnSample(c, f)))
-      val ds =
+      val ds   =
         Dataset(cs map columnNames, data, indices = Seq("count", "mean", "std", "min", "25%", "50%", "75%", "max"))
 
       ds
@@ -416,7 +416,7 @@ class Dataset protected (
     require(n >= 0, "number of samples must be non-negative")
 
     val indicesSet = new mutable.HashSet[Int]
-    val count = n min rows
+    val count      = n min rows
 
     while indicesSet.size < count do indicesSet += Random.nextInt(rows)
 
@@ -428,11 +428,11 @@ class Dataset protected (
     require(splits.nonEmpty, "need at least one split")
     require(splits.sum == 100, s"splits should sum to 100; got ${splits.sum}")
 
-    var shuffled = Random.shuffle(dataArray)
+    var shuffled  = Random.shuffle(dataArray)
     var remaining = dataArray.length
-    val sections =
+    val sections  =
       for i <- 0 to splits.length - 2 yield
-        val len = (splits(i) / 100.0 * dataArray.length).toInt
+        val len             = (splits(i) / 100.0 * dataArray.length).toInt
         val (section, rest) = shuffled.splitAt(len)
 
         shuffled = rest
@@ -530,9 +530,9 @@ class Dataset protected (
 
   protected def residualSumOfSquares(predictions: String, target: String): Double =
     (for i <- 0 until rows yield
-      val row = iloc(i)
+      val row        = iloc(i)
       val prediction = row(predictions).head.head.asInstanceOf[Number].doubleValue
-      val diff = prediction - row(target).head.head.asInstanceOf[Number].doubleValue
+      val diff       = prediction - row(target).head.head.asInstanceOf[Number].doubleValue
 
       diff * diff
     ).sum
@@ -541,7 +541,7 @@ class Dataset protected (
     val mean = Sample.mean(columnNonNull(target))
 
     (for i <- 0 until rows yield
-      val row = iloc(i)
+      val row  = iloc(i)
       val diff = mean - row(target).head.head.asInstanceOf[Number].doubleValue
 
       diff * diff
@@ -567,11 +567,11 @@ object Dataset:
       types: collection.Seq[Type] = Seq(InferType),
       indices: collection.Seq[Any] = Nil,
   ): Dataset =
-    val columnNameMap = columns.zipWithIndex.toMap
+    val columnNameMap   = columns.zipWithIndex.toMap
     val columnNameArray = Vector from columns
-    val dataArray = data map (_ to ArrayBuffer) to ArrayBuffer
+    val dataArray       = data map (_ to ArrayBuffer) to ArrayBuffer
     val columnTypeArray = ArrayBuffer from types
-    val rowIndexArray = (if indices.isEmpty then dataArray.indices else indices).toVector
+    val rowIndexArray   = (if indices.isEmpty then dataArray.indices else indices).toVector
 
     require(columnNameArray.nonEmpty, "a dataset needs at least one column")
     require(columnNameArray.distinct.length == columnNameArray.length, "column names must be distinct")
@@ -596,17 +596,17 @@ object Dataset:
       sys.error(s"conversion error [${r + 1}, ${c + 1}]: '$a' cannot be converted to type '$to'")
 
     for (c <- columnNameArray.indices) {
-      var tempType = columnTypeArray(c)
-      var changed = false
+      var tempType   = columnTypeArray(c)
+      var changed    = false
       val tempValues = new ArrayBuffer[Any](dataArray.length)
 
       for (r <- dataArray.indices) {
-        val d = dataArray(r)(c)
+        val d            = dataArray(r)(c)
         val prevTempType = tempType
 
         columnTypeArray(c) match
           case InferType if d == null => tempValues += null
-          case InferType =>
+          case InferType              =>
             val (t, v) = IntType.convert(d) match
               case None =>
                 FloatType.convert(d) match
