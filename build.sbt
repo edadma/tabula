@@ -59,12 +59,11 @@ lazy val tabula = crossProject(JSPlatform, JVMPlatform, NativePlatform)
 //    libraryDependencies ++= Seq(
 //      "com.github.scopt" %%% "scopt" % "4.1.0",
 //    ),
-    resolvers += Resolver.githubPackages("edadma"),
     libraryDependencies ++= Seq(
 //      "io.github.edadma" %%% "csv" % "0.1.4",
       "io.github.edadma" %%% "importer" % "0.0.8",
       "io.github.edadma" %%% "matrix" % "0.0.2",
-      "io.github.edadma" %%% "table" % "1.0.3",
+      "io.github.edadma" %%% "table" % "0.0.1",
     ),
     publishMavenStyle := true,
     Test / publishArtifact := false,
@@ -73,7 +72,7 @@ lazy val tabula = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .jvmSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
     libraryDependencies += "com.lihaoyi" %%% "pprint" % "0.7.3" % "test",
-    libraryDependencies += "org.postgresql" % "postgresql" % "42.4.0",
+    libraryDependencies += "org.postgresql" % "postgresql" % "42.7.7",
   )
   .nativeSettings(
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
