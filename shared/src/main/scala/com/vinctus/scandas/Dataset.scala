@@ -684,21 +684,21 @@ object Dataset:
       case None                         => sys.error(s"table '$table' not found")
       case Some(Table(_, header, data)) => Dataset(header map (_.name), data)
 
-//  def fromCSVString(s: String, columns: Seq[String] = null): Dataset =
-//    val csv = CSVRead.fromString(s).get
-//    val (header, data) =
-//      if (columns eq null) (csv.head, csv drop 1)
-//      else (columns, csv)
-//
-//    Dataset(header, data)
-//
-//  def fromCSVFile(file: String, columns: Seq[String] = null): Dataset =
-//    val csv = CSVRead.fromFile(file).get
-//    val (header, data) =
-//      if (columns eq null) (csv.head, csv drop 1)
-//      else (columns, csv)
-//
-//    Dataset(header, data)
+  def fromCSVString(s: String, columns: Seq[String] = null): Dataset =
+    val csv            = CSVRead.fromString(s).get
+    val (header, data) =
+      if (columns eq null) (csv.head, csv drop 1)
+      else (columns, csv)
+
+    Dataset(header, data)
+
+  def fromCSVFile(file: String, columns: Seq[String] = null): Dataset =
+    val csv            = CSVRead.fromFile(file).get
+    val (header, data) =
+      if (columns eq null) (csv.head, csv drop 1)
+      else (columns, csv)
+
+    Dataset(header, data)
 
 enum Axis:
   case INDEX, COLUMN

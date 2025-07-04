@@ -1,11 +1,11 @@
-ThisBuild / licenses += "ISC" -> url("https://opensource.org/licenses/ISC")
-ThisBuild / versionScheme := Some("semver-spec")
-ThisBuild / evictionErrorLevel := Level.Warn
-ThisBuild / scalaVersion := "3.7.1"
-ThisBuild / organization := "io.github.edadma"
-ThisBuild / organizationName := "edadma"
-ThisBuild / organizationHomepage := Some(url("https://github.com/edadma"))
-ThisBuild / version := "0.0.1"
+ThisBuild / licenses += "ISC"      -> url("https://opensource.org/licenses/ISC")
+ThisBuild / versionScheme          := Some("semver-spec")
+ThisBuild / evictionErrorLevel     := Level.Warn
+ThisBuild / scalaVersion           := "3.7.1"
+ThisBuild / organization           := "io.github.edadma"
+ThisBuild / organizationName       := "edadma"
+ThisBuild / organizationHomepage   := Some(url("https://github.com/edadma"))
+ThisBuild / version                := "0.0.1"
 ThisBuild / sonatypeCredentialHost := "central.sonatype.com"
 
 ThisBuild / publishConfiguration := publishConfiguration.value.withOverwrite(true).withChecksums(Vector.empty)
@@ -41,8 +41,8 @@ ThisBuild / publishTo := {
 lazy val tabula = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(
-    name := "tabula",
-    version := "0.0.2",
+    name         := "tabula",
+    version      := "0.0.2",
     scalaVersion := "3.1.3",
     scalacOptions ++=
       Seq(
@@ -54,37 +54,37 @@ lazy val tabula = crossProject(JSPlatform, JVMPlatform, NativePlatform)
         "-language:existentials",
         "-language:dynamics",
       ),
-    organization := "io.github.vinctustech",
+    organization                            := "io.github.vinctustech",
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.19" % "test",
 //    libraryDependencies ++= Seq(
 //      "com.github.scopt" %%% "scopt" % "4.1.0",
 //    ),
     libraryDependencies ++= Seq(
-//      "io.github.edadma" %%% "csv" % "0.1.4",
+      "io.github.edadma" %%% "csv"      % "0.0.1",
       "io.github.edadma" %%% "importer" % "0.0.8",
-      "io.github.edadma" %%% "matrix" % "0.0.2",
-      "io.github.edadma" %%% "table" % "0.0.1",
+      "io.github.edadma" %%% "matrix"   % "0.0.2",
+      "io.github.edadma" %%% "table"    % "0.0.1",
     ),
-    publishMavenStyle := true,
+    publishMavenStyle      := true,
     Test / publishArtifact := false,
-    licenses += "ISC" -> url("https://opensource.org/licenses/ISC"),
+    licenses += "ISC"      -> url("https://opensource.org/licenses/ISC"),
   )
   .jvmSettings(
-    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
-    libraryDependencies += "com.lihaoyi" %%% "pprint" % "0.7.3" % "test",
-    libraryDependencies += "org.postgresql" % "postgresql" % "42.7.7",
+    libraryDependencies += "org.scala-js"  %% "scalajs-stubs" % "1.1.0" % "provided",
+    libraryDependencies += "com.lihaoyi"  %%% "pprint"        % "0.7.3" % "test",
+    libraryDependencies += "org.postgresql" % "postgresql"    % "42.7.7",
   )
   .nativeSettings(
-    libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
+    libraryDependencies += "org.scala-js"       %% "scalajs-stubs"   % "1.1.0" % "provided",
     libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.6.0",
   )
   .jsSettings(
     jsEnv := new org.scalajs.jsenv.nodejs.NodeJSEnv(),
 //    Test / scalaJSUseMainModuleInitializer := true,
 //    Test / scalaJSUseTestModuleInitializer := false,
-    Test / scalaJSUseMainModuleInitializer := false,
-    Test / scalaJSUseTestModuleInitializer := true,
-    scalaJSUseMainModuleInitializer := true,
+    Test / scalaJSUseMainModuleInitializer      := false,
+    Test / scalaJSUseTestModuleInitializer      := true,
+    scalaJSUseMainModuleInitializer             := true,
     libraryDependencies += "io.github.cquiroz" %%% "scala-java-time" % "2.6.0",
   )
 
@@ -92,7 +92,7 @@ lazy val root = project
   .in(file("."))
   .aggregate(tabula.js, tabula.jvm, tabula.native)
   .settings(
-    name := "tabula",
-    publish / skip := true,
+    name                := "tabula",
+    publish / skip      := true,
     publishLocal / skip := true,
   )
