@@ -5,7 +5,7 @@ ThisBuild / scalaVersion           := "3.7.1"
 ThisBuild / organization           := "io.github.edadma"
 ThisBuild / organizationName       := "edadma"
 ThisBuild / organizationHomepage   := Some(url("https://github.com/edadma"))
-ThisBuild / version                := "0.0.3"
+ThisBuild / version                := "0.0.4"
 ThisBuild / sonatypeCredentialHost := "central.sonatype.com"
 
 ThisBuild / publishConfiguration := publishConfiguration.value.withOverwrite(true).withChecksums(Vector.empty)
@@ -52,7 +52,6 @@ lazy val tabula = crossProject(JSPlatform, JVMPlatform, NativePlatform)
         "-language:existentials",
         "-language:dynamics",
       ),
-    organization                            := "io.github.vinctustech",
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.19" % "test",
 //    libraryDependencies ++= Seq(
 //      "com.github.scopt" %%% "scopt" % "4.1.0",
