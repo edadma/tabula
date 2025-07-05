@@ -114,13 +114,13 @@ class Dataset protected (
 
   def !=(a: String): Dataset = predicate[String](_ != a)
 
-  def >(a: Instant): Dataset = predicate[Instant](_ isAfter a)
+  def >(a: Instant): Dataset = predicate[Instant](_.isAfter(a))
 
-  def >=(a: Instant): Dataset = predicate[Instant](t => !(t isBefore a))
+  def >=(a: Instant): Dataset = predicate[Instant](t => !t.isBefore(a))
 
-  def <(a: Instant): Dataset = predicate[Instant](_ isBefore a)
+  def <(a: Instant): Dataset = predicate[Instant](_.isBefore(a))
 
-  def <=(a: Instant): Dataset = predicate[Instant](t => !(t isAfter a))
+  def <=(a: Instant): Dataset = predicate[Instant](t => !t.isAfter(a))
 
   def ==(a: Instant): Dataset = predicate[Instant](_ == a)
 
