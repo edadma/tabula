@@ -1,4 +1,4 @@
-package com.vinctus.scandas
+package io.github.edadma.tabula
 
 import math._
 import scala.language.postfixOps

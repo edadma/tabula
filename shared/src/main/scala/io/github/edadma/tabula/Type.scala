@@ -1,4 +1,4 @@
-package com.vinctus.scandas
+package io.github.edadma.tabula
 
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, LocalDateTime, ZoneOffset, ZonedDateTime}

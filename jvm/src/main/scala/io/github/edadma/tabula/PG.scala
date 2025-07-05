@@ -1,4 +1,4 @@
-package com.vinctus.scandas
+package io.github.edadma.tabula
 
 import java.sql.{Connection, DriverManager, ResultSet}
 import scala.collection.mutable.ArrayBuffer

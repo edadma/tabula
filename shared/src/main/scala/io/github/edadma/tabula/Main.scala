@@ -1,4 +1,4 @@
-package com.vinctus.scandas
+package io.github.edadma.tabula
 
 import java.time.{Duration, Instant, LocalDateTime, ZoneOffset}
 import java.time.temporal.ChronoUnit.*

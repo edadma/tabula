@@ -1,4 +1,4 @@
-package com.vinctus.scandas
+package io.github.edadma.tabula
 
 import io.github.edadma.csv.CSVRead
 import io.github.edadma.importer.{Importer, Table}
