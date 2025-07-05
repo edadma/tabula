@@ -58,8 +58,8 @@ lazy val tabula = crossProject(JSPlatform, JVMPlatform, NativePlatform)
 //      "com.github.scopt" %%% "scopt" % "4.1.0",
 //    ),
     libraryDependencies ++= Seq(
-      "io.github.edadma" %%% "csv"      % "0.0.1",
-      "io.github.edadma" %%% "importer" % "0.0.8",
+      "io.github.edadma" %%% "csv"      % "0.0.3",
+      "io.github.edadma" %%% "importer" % "0.0.9",
       "io.github.edadma" %%% "matrix"   % "0.0.2",
       "io.github.edadma" %%% "table"    % "0.0.1",
     ),

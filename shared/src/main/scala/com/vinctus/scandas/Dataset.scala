@@ -1,9 +1,8 @@
 package com.vinctus.scandas
 
-//import io.github.edadma.csv.CSVRead
+import io.github.edadma.csv.CSVRead
 import io.github.edadma.importer.{Importer, Table}
-import io.github.edadma.matrix.Matrix
-import io.github.edadma.table.{ASCII, TextTable}
+import io.github.edadma.table.TextTable
 
 import java.time.temporal.ChronoUnit
 import java.time.{Duration, Instant}
